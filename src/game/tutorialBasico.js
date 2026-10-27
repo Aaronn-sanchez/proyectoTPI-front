@@ -1,7 +1,8 @@
 import { Scene } from "phaser";
 import wachin from "./clases/wachin.js";
 import Agua from "./clases/agua.js";
-import { iniciarCarpincho } from "./entidades/carpincho.js";
+import { iniciarCarpincho, prepararFramesCarpincho } from "./entidades/carpincho.js";
+import { crearSuperficieCurva } from "../utilidades/superficiesCurvas.js";
 
 export default class escena1 extends Scene {
     constructor() {
@@ -9,11 +10,28 @@ export default class escena1 extends Scene {
     }
 
     preload() {
-        this.load.image('carpincho', '/src/assets/sprites-png/carpincho.png');
-        this.load.image('cielo', '/src/assets/sprites-png/background-cielo.png');
-        this.load.image('pastito_tiles', '/src/assets/sprites-png/pastitio.png');
-        this.load.image('pozito_tiles', '/src/assets/sprites-png/pastito-pozito.png');
+        const url = "/src/assets/sprites-png/"
+
+        const url2 = "/src/assets/sprites-carpincho-png/"
+
+        this.load.image('carpincho', url + 'carpincho.png');
+        this.load.image('cielo', url + 'background-cielo.png');
+        this.load.image('pastito_tiles', url + 'pastitio.png');
+        this.load.image('pozito_tiles', url + 'pastito-pozito.png');
         this.load.json('nivel_0', '/src/assets/levels/humedal_level.json');
+        this.load.image('hierbas', url + 'pastito-pozito-con-hievas.png')
+
+        // imagenes de sprites carpincho
+
+        this.load.image('frame_1', url2 + 'casi de pie.png')
+        this.load.image('frame_2', url2 + 'correccion frame 4.png')
+        this.load.image('frame_3', url2 + 'frame 1.png')
+        this.load.image('frame_4', url2 + 'frame 2.png')
+        this.load.image('frame_5', url2 + 'frame 3.png')
+        this.load.image('frame_6', url2 + 'frame 5.5.png')
+        this.load.image('frame_7', url2 + 'frame f2-1.png')
+        this.load.image('frame_8', url2 + 'frame f2-2.png')
+        this.load.image('frame_9', url2 + 'frame f2-3.png')
 
         const gotaCanvas = this.textures.createCanvas('gota', 6, 6);
         const ctx = gotaCanvas.getContext();
@@ -94,6 +112,27 @@ export default class escena1 extends Scene {
             });
         }
 
+        const capaHierbas = nivel.layerInstances.find(l => l.__identifier === "Hierbas")
+
+        if (capaHierbas) {
+            const texturaHierba = this.textures.get('hierbas');
+
+            capaHierbas.gridTiles.forEach(tile => {
+                const nombreFrame = `hierba_${tile.src[0]}_${tile.src[1]}_${tile.f}`;
+
+                if (!texturaHierba.has(nombreFrame)) {
+                    texturaHierba.add(nombreFrame, 0, tile.src[0], tile.src[1], 16, 16);
+                }
+
+                const tileImg = this.add.image(tile.px[0], tile.px[1], 'hierbas', nombreFrame).setOrigin(0, 0);
+                tileImg.setDepth(5);
+
+                if (tile.f === 1) {
+                    tileImg.setFlipX(true);
+                }
+            });
+        }
+
         // ========================================================
         // CAPA DE COLISIONES: cuerpos estáticos en Matter + Agua
         // ========================================================
@@ -145,6 +184,8 @@ export default class escena1 extends Scene {
         const inicioX = spawnCarpincho ? spawnCarpincho.px[0] : 160;
         const inicioY = spawnCarpincho ? spawnCarpincho.px[1] : 288;
 
+        // Normaliza los frames (48x48, pies alineados) ANTES de crear al carpincho
+        prepararFramesCarpincho(this);
         this.carpincho = new wachin(this, inicioX, inicioY, 'carpincho', iniciarCarpincho);
 
         // ========================================================
@@ -154,6 +195,30 @@ export default class escena1 extends Scene {
         this.cameras.main.startFollow(this.carpincho, true, 0.08, 0.08);
         this.teclas = this.input.keyboard.createCursorKeys();
         this.teclasWASD = this.input.keyboard.addKeys('W,A,S,D,SPACE');
+
+
+        // ========================================================
+        // SUPERFICIES CURVAS (entidades "Curva" de LDtk)
+        // ========================================================
+        const capaEnt = nivel.layerInstances.find(l => l.__identifier === 'Entidades');
+        const gridCurva = capaEnt?.__gridSize ?? 16;
+
+        capaEnt?.entityInstances
+            .filter(e => e.__identifier === 'Curva')
+            .forEach(e => {
+                const campo = e.fieldInstances.find(f => f.__identifier === 'puntos');
+                if (!campo || !campo.__value) return;
+
+                const pts = campo.__value
+                    .filter(p => p !== null)
+                    .map(p => ({
+                        x: (p.cx + 0.5) * gridCurva,
+                        y: p.cy * gridCurva
+                    }))
+                    .sort((a, b) => a.x - b.x);
+
+                crearSuperficieCurva(this, pts, { grosor: 24, subdivisiones: 8 });
+            });
     }
 
     update(tiempo, delta) {
@@ -172,5 +237,6 @@ export default class escena1 extends Scene {
         if (this.fondoCielo) {
             this.fondoCielo.tilePositionX = this.cameras.main.scrollX * 0.2;
         }
+
     }
 }
