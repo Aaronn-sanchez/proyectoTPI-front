@@ -2,7 +2,7 @@ import './App.css'
 
 import { useEffect, useRef } from 'react';
 import Phaser from 'phaser'
-import TutorialBasico from './game/tutorialBasico.js';
+import TutorialBasico from './game/escenas/tutorialBasico';
 
 export default function App() {
 
