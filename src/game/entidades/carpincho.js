@@ -70,7 +70,7 @@ export function iniciarCarpincho(personaje) {
     personaje.sueloActual = null;   // cuerpo sobre el que está parado (piso, caja, etc.)
 
     // Coyote time: margen (ms) para saltar justo después de dejar el suelo
-    personaje.margenCoyote = 100;
+    personaje.margenCoyote = 1000;
     personaje.ultimoSuelo = -1000;
 
     // Sprite fijo mientras está en el aire
@@ -88,9 +88,9 @@ export function iniciarCarpincho(personaje) {
 
     // Etapa 1: levantarse (una sola vez)
     personaje.scene.anims.create({
-        key: 'carpincho_levantarse',
-        frames: ['cp_carpincho', 'cp_frame_1', 'cp_frame_2', 'cp_frame_3', 'cp_frame_4', 'cp_frame_5']
+        key: 'carpincho_levantarse', frames: ['cp_carpincho', 'cp_frame_1', 'cp_frame_2', 'cp_frame_3', 'cp_frame_4', 'cp_frame_5']
             .map(key => ({ key })),
+
         frameRate: 12,
         repeat: 0
     });
@@ -122,11 +122,11 @@ export function iniciarCarpincho(personaje) {
     // Sin fricción: el frenado horizontal se hace a mano en mover(), y así
     // no pierde velocidad al subir rampas o curvas.
     const cuerpoPrincipal = Matter.Bodies.rectangle(x, y, ancho, alto, {
-        chamfer: { radius: 8 * ESCALA },
         friction: 0,
         frictionStatic: 0,
         restitution: 0.0
     });
+
 
     // Parte 2: sensor fino pegado a la base. No choca con nada (isSensor), solo
     // avisa si toca algo. Es más angosto que el cuerpo para que las paredes
@@ -137,8 +137,20 @@ export function iniciarCarpincho(personaje) {
         density: 0.0001   // casi sin masa: no desplaza el centro del cuerpo
     });
 
+    const sensorDerecha = Matter.Bodies.rectangle(x, y + ancho / 2 + 1, Math.round(20 * ESCALA), 4, {
+        isSensor: true,
+        label: 'sensorDerecha',
+        density: 0.0001   // casi sin masa: no desplaza el centro del cuerpo
+    });
+
+    const sensorIzquierda = Matter.Bodies.rectangle(x, y + ancho / 2 + 1, Math.round(20 * ESCALA), 4, {
+        isSensor: true,
+        label: 'sensorIzquierda',
+        density: 0.0001   // casi sin masa: no desplaza el centro del cuerpo
+    });
+
     const compuesto = Matter.Body.create({
-        parts: [cuerpoPrincipal, sensorSuelo],
+        parts: [cuerpoPrincipal, sensorSuelo, sensorDerecha, sensorIzquierda],
         friction: 0,
         frictionStatic: 0,
         frictionAir: 0.02,   // la fricción del aire se lee del cuerpo padre
