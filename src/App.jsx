@@ -1,60 +1,13 @@
-import './App.css'
-
-import { useEffect, useRef } from 'react';
-import Phaser from 'phaser'
-import TutorialBasico from './game/escenas/tutorialBasico';
+import { Route, Switch } from 'wouter';
+import Menu from './pages/menu.jsx';
+import Juego from './pages/juego.jsx';
 
 export default function App() {
-
-  const contenedorJuego = useRef(null);
-  const juegoInstancia = useRef(null);
-
-  useEffect(() => {
-    if (juegoInstancia.current) return;
-
-    const config = {
-      type: Phaser.AUTO,
-      width: 960,
-      height: 540,
-      parent: contenedorJuego.current,
-      physics: {
-        default: 'matter',
-        matter: {
-          gravity: { y: 1.2 },
-          debug: true
-        }
-      },
-      scale: {
-        mode: Phaser.Scale.ENVELOP,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 960,
-        height: 540
-      },
-      scene: [TutorialBasico]
-    };
-
-    juegoInstancia.current = new Phaser.Game(config);
-
-    return () => {
-      if (juegoInstancia.current) {
-        juegoInstancia.current.destroy(true);
-        juegoInstancia.current = null;
-      }
-    };
-  }, []);
-
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#1a1a1a',
-      margin: 0,
-      overflow: 'hidden'
-    }}>
-      <div ref={contenedorJuego} />
-    </div>
+    <Switch>
+      <Route path="/" component={Menu} />
+      <Route path="/jugar" component={Juego} />
+      <Route>Página no encontrada</Route>
+    </Switch>
   );
 }

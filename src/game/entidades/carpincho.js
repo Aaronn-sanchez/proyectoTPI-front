@@ -131,29 +131,32 @@ export function iniciarCarpincho(personaje) {
     // Parte 2: sensor fino pegado a la base. No choca con nada (isSensor), solo
     // avisa si toca algo. Es más angosto que el cuerpo para que las paredes
     // laterales jamás lo toquen. Sobresale 3 px por debajo de los pies.
-    const sensorSuelo = Matter.Bodies.rectangle(x, y + alto / 2 + 1, Math.round(20 * ESCALA), 4, {
-        isSensor: true,
-        label: 'sensorSuelo',
-        density: 0.0001   // casi sin masa: no desplaza el centro del cuerpo
-    });
+    // Sensor de suelo (igual que antes)
+    const sensorSuelo = Matter.Bodies.rectangle(
+        x, y + alto / 2 + 1, Math.round(20 * ESCALA), 4,
+        { isSensor: true, label: 'sensorSuelo', density: 0.0001 }
+    );
 
-    const sensorDerecha = Matter.Bodies.rectangle(x, y + ancho / 2 + 1, Math.round(20 * ESCALA), 4, {
-        isSensor: true,
-        label: 'sensorDerecha',
-        density: 0.0001   // casi sin masa: no desplaza el centro del cuerpo
-    });
+    // Sensores de pared: angostos y altos, pegados a los costados.
+    // Miden solo el 60% de la altura y están centrados, así el piso
+    // (a la altura de los pies) y el techo nunca los activan.
+    const altoPared = Math.round(alto * 0.6);
 
-    const sensorIzquierda = Matter.Bodies.rectangle(x, y + ancho / 2 + 1, Math.round(20 * ESCALA), 4, {
-        isSensor: true,
-        label: 'sensorIzquierda',
-        density: 0.0001   // casi sin masa: no desplaza el centro del cuerpo
-    });
+    const sensorIzquierda = Matter.Bodies.rectangle(
+        x - ancho / 2 - 1, y, 4, altoPared,
+        { isSensor: true, label: 'sensorIzquierda', density: 0.0001 }
+    );
+
+    const sensorDerecha = Matter.Bodies.rectangle(
+        x + ancho / 2 + 1, y, 4, altoPared,
+        { isSensor: true, label: 'sensorDerecha', density: 0.0001 }
+    );
 
     const compuesto = Matter.Body.create({
-        parts: [cuerpoPrincipal, sensorSuelo, sensorDerecha, sensorIzquierda],
+        parts: [cuerpoPrincipal, sensorSuelo, sensorIzquierda, sensorDerecha],
         friction: 0,
         frictionStatic: 0,
-        frictionAir: 0.02,   // la fricción del aire se lee del cuerpo padre
+        frictionAir: 0.02,
         restitution: 0.0
     });
 
