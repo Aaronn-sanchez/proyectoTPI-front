@@ -208,6 +208,9 @@ export default class escena1 extends Scene {
         this.cameras.main.setFollowOffset(0, -100);
 
         this.teclas = this.input.keyboard.createCursorKeys();
+
+        this.cameras.main.setFollowOffset(0, -100);
+
         this.teclasWASD = this.input.keyboard.addKeys('W,A,S,D,SPACE');
 
 
