@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import TutorialBasico from './escenas/tutorialBasico';
+import TutorialBasico from './escenas/TutorialBasico';
 
 const width = window.innerWidth;
 const height = window.innerHeight;

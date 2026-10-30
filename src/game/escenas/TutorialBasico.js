@@ -4,21 +4,21 @@ import Agua from "../entidades/agua.js";
 import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/carpincho.js";
 import { crearSuperficieCurva } from "../utilidades/superficiesCurvas.js";
 
-export default class escena1 extends Scene {
+export default class TutorialBasico extends Scene {
     constructor() {
         super("tutorialBasico");
     }
 
     preload() {
-        const url = "../public/assets/sprites/escenario/";
-        const url2 = "../public/assets/sprites/carpincho/";
+        const url = "/assets/sprites/escenario/";
+        const url2 = "/assets/sprites/carpincho/";
 
         this.load.image('cielo', url + 'background-cielo.png');
         this.load.image('pastito_tiles', url + 'pastitio.png');
         this.load.image('pozito_tiles', url + 'pastito-pozito.png');
-        this.load.json('nivel_0', '../public/assets/levels/humedal_level.json');
         this.load.image('hierbas', url + 'pastito-pozito-con-hievas.png')
 
+        this.load.json('nivel_0', '/assets/levels/humedal_level.json');
         // imagenes de sprites carpincho
 
         this.load.image('carpincho', url2 + 'carpincho.png');
@@ -32,13 +32,15 @@ export default class escena1 extends Scene {
         this.load.image('frame_8', url2 + 'frame f2-2.png')
         this.load.image('frame_9', url2 + 'frame f2-3.png')
 
-        const gotaCanvas = this.textures.createCanvas('gota', 6, 6);
-        const ctx = gotaCanvas.getContext();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(3, 3, 3, 0, Math.PI * 2);
-        ctx.fill();
-        gotaCanvas.refresh();
+        if (!this.textures.exists('gota')) {
+            const gotaCanvas = this.textures.createCanvas('gota', 6, 6);
+            const ctx = gotaCanvas.getContext();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(3, 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            gotaCanvas.refresh();
+        }
     }
 
     create() {
@@ -203,14 +205,10 @@ export default class escena1 extends Scene {
         // CÁMARA Y CONTROLES
         // ========================================================
         this.cameras.main.setBounds(0, 0, nivel.pxWid, nivel.pxHei);
-
         this.cameras.main.startFollow(this.carpincho, true, 0.08, 0.08);
         this.cameras.main.setFollowOffset(0, -100);
 
         this.teclas = this.input.keyboard.createCursorKeys();
-
-        this.cameras.main.setFollowOffset(0, -100);
-
         this.teclasWASD = this.input.keyboard.addKeys('W,A,S,D,SPACE');
 
 
