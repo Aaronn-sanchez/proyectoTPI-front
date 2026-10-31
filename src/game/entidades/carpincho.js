@@ -45,9 +45,19 @@ export function prepararFramesCarpincho(scene) {
 }
 
 // ==========================================================
-// CARPINCHO
+// CARPINCHO 
 // ==========================================================
 export function iniciarCarpincho(personaje) {
+    // Adaptación a pendientes
+    personaje.ultimoContactoCurva = -1000; // última vez que el sensor tocó una curva
+    personaje.margenCurva = 150;           // ms que mantiene el ángulo tras perder la curva
+    personaje.anguloMaximo = Phaser.Math.DegToRad(45); // tope de inclinación
+    personaje.velocidadGiro = 0.008;                   // rad por ms (más alto = gira más rápido)
+    personaje.anguloObjetivo = 0;                      // hacia dónde quiere rotar
+    // Aterrizaje (para eventos de sonido)
+    personaje.ultimoContactoSuelo = 0; // último instante con el sensor de suelo tocando algo y coso de coso
+    //nodoymaswacho 
+
     personaje.peso = true;
     personaje.velocidadTierra = 4.5;
     personaje.fuerzaSalto = -8.5 * Math.sqrt(ESCALA); // más grande = salto más fuerte
@@ -110,7 +120,7 @@ export function iniciarCarpincho(personaje) {
     });
 
     // ==========================================================
-    // CUERPO COMPUESTO: hitbox + SENSOR DE SUELO en los pies
+    // CUERPO COMPUESTO: hitbox + SENSORES (suelo, izquierda, derecha)
     // ==========================================================
     const Matter = Phaser.Physics.Matter.Matter;
     const x = personaje.x;
@@ -118,20 +128,19 @@ export function iniciarCarpincho(personaje) {
     const ancho = Math.round(34 * ESCALA);
     const alto = Math.round(30 * ESCALA);
 
-    // Parte 1: cuerpo sólido con esquinas redondeadas.
+    // Parte 1: cuerpo sólido.
     // Sin fricción: el frenado horizontal se hace a mano en mover(), y así
     // no pierde velocidad al subir rampas o curvas.
     const cuerpoPrincipal = Matter.Bodies.rectangle(x, y, ancho, alto, {
         friction: 0,
         frictionStatic: 0,
-        restitution: 0.0
+        restitution: 0.0,
+        chamfer: { radius: [0, 0, Math.round(8 * ESCALA), Math.round(8 * ESCALA)] }
     });
-
 
     // Parte 2: sensor fino pegado a la base. No choca con nada (isSensor), solo
     // avisa si toca algo. Es más angosto que el cuerpo para que las paredes
     // laterales jamás lo toquen. Sobresale 3 px por debajo de los pies.
-    // Sensor de suelo (igual que antes)
     const sensorSuelo = Matter.Bodies.rectangle(
         x, y + alto / 2 + 1, Math.round(20 * ESCALA), 4,
         { isSensor: true, label: 'sensorSuelo', density: 0.0001 }
@@ -160,6 +169,12 @@ export function iniciarCarpincho(personaje) {
         restitution: 0.0
     });
 
+    personaje.sensores = {
+        suelo: sensorSuelo,
+        izquierda: sensorIzquierda,
+        derecha: sensorDerecha
+    };
+
     personaje.setExistingBody(compuesto);
     personaje.setFixedRotation();
     personaje.setPosition(x, y);
@@ -170,44 +185,137 @@ export function iniciarCarpincho(personaje) {
     personaje.setOrigin(0.5, 0.5 + ((TAM - alto) / 2) / TAM);
 
     // ==========================================================
-    // DETECCIÓN DE SUELO por eventos de colisión
+    // DETECCIÓN DE CONTACTO DE TODOS LOS SENSORES
     // ==========================================================
     const mundo = personaje.scene.matter.world;
 
-    // Antes de cada paso de física: asumir que está en el aire.
+    // Lista de sensores del carpincho.
+    const sensores = [
+        sensorSuelo,
+        sensorIzquierda,
+        sensorDerecha
+    ];
+
+    // Inicializar el estado de cada sensor.
+    for (const sensor of sensores) {
+        sensor.tocando = false;
+        sensor.estadoAnterior = false;
+        sensor.contactos = [];
+        sensor.contactoActual = null;
+        sensor.labelContacto = null; // label del elemento que toca (null = no toca nada)
+    }
+
+    // Devuelve el label del cuerpo, o un texto por defecto si no tiene.
+    // Matter pone label "Body" / "Rectangle Body" por defecto, así que
+    // también se tratan como "sin label".
+    const obtenerLabel = (cuerpo) => {
+        const label = cuerpo.parent?.label ?? cuerpo.label;
+        if (!label || label === 'Body' || label === 'Rectangle Body') {
+            return 'elemento desconocido';
+        }
+        return label;
+    };
+
+    // Antes de cada paso de física, reiniciar los contactos.
     const reiniciarContactos = () => {
         personaje.enSuelo = false;
         personaje.sueloActual = null;
-    };
 
-    // Durante el paso: si el sensor toca algo sólido, está en el suelo.
-    const detectarSuelo = (evento) => {
-        for (const par of evento.pairs) {
-            let otro;
-            if (par.bodyA === sensorSuelo) otro = par.bodyB;
-            else if (par.bodyB === sensorSuelo) otro = par.bodyA;
-            else continue;
-
-            if (otro.isSensor) continue;               // ignorar otros sensores
-            if (otro.parent === compuesto) continue;   // ignorar el propio carpincho
-
-            personaje.enSuelo = true;
-            personaje.sueloActual = otro.parent;       // cuerpo completo (piso, caja...)
+        for (const sensor of sensores) {
+            sensor.tocando = false;
+            sensor.contactos = [];
+            sensor.contactoActual = null;
+            sensor.labelContacto = null;
         }
     };
 
-    mundo.on('beforeupdate', reiniciarContactos);
-    mundo.on('collisionstart', detectarSuelo);
-    mundo.on('collisionactive', detectarSuelo);
+    // Detectar los contactos de todos los sensores.
+    const detectarContacto = (evento) => {
+        for (const contacto of evento.pairs) {
+            let sensor;
+            let otro;
 
-    // Limpieza: si el carpincho se destruye (o se reinicia la escena), soltar los
-    // listeners para que no queden escuchando un cuerpo que ya no existe.
+            // Identificar si alguno de los cuerpos es uno de nuestros sensores.
+            if (sensores.includes(contacto.bodyA)) {
+                sensor = contacto.bodyA;
+                otro = contacto.bodyB;
+            } else if (sensores.includes(contacto.bodyB)) {
+                sensor = contacto.bodyB;
+                otro = contacto.bodyA;
+            } else {
+                continue;
+            }
+
+            // Ignorar otros sensores.
+            if (otro.isSensor) continue;
+
+            // Ignorar el propio carpincho.
+            if (otro.parent === compuesto) continue;
+
+            // Registrar el contacto.
+            sensor.tocando = true;
+            sensor.contactos.push(otro.parent);
+            sensor.contactoActual = otro.parent;
+            sensor.labelContacto = obtenerLabel(otro);
+
+            // Mantener el comportamiento original del sensor de suelo.
+            if (sensor === sensorSuelo) {
+                personaje.enSuelo = true;
+                personaje.sueloActual = otro.parent;
+            }
+        }
+    };
+
+    // Registrar los eventos de Matter.js.
+    mundo.on('beforeupdate', reiniciarContactos);
+    mundo.on('collisionstart', detectarContacto);
+    mundo.on('collisionactive', detectarContacto);
+
+    // Limpiar los eventos cuando se destruye el personaje (o se reinicia la
+    // escena), para que no queden escuchando un cuerpo que ya no existe.
     personaje.once('destroy', () => {
         mundo.off('beforeupdate', reiniciarContactos);
-        mundo.off('collisionstart', detectarSuelo);
-        mundo.off('collisionactive', detectarSuelo);
+        mundo.off('collisionstart', detectarContacto);
+        mundo.off('collisionactive', detectarContacto);
     });
+    // ==========================================================
+    // ADAPTAR A LA PENDIENTE
+    // Rota el cuerpo (hitbox + sensores + sprite) según el ángulo del suelo.
+    // Llamar cada frame DESPUÉS de mover().
+    // ==========================================================
+    personaje.adaptarSueloCarpincho = function (delta) {
+        const sensorSuelo = this.sensores.suelo;
+        const ahora = this.scene.time.now;
 
+        // Por defecto mantiene el objetivo actual
+        let objetivo = this.anguloObjetivo;
+
+        if (this.sumersion >= this.umbralNado) {
+            // Nadando: sin inclinación
+            objetivo = 0;
+        } else {
+            // Tramos curvos que toca (en empalmes puede tocar dos)
+            const tramos = sensorSuelo.contactos.filter(c => c.pendiente !== undefined);
+
+            if (tramos.length > 0) {
+                objetivo = tramos.reduce((acc, c) => acc + c.pendiente, 0) / tramos.length;
+                this.ultimoContactoCurva = ahora;
+            } else if (ahora - this.ultimoContactoCurva > this.margenCurva) {
+                // Hace rato que no toca ninguna curva: se endereza
+                objetivo = 0;
+            }
+        }
+
+        objetivo = Phaser.Math.Clamp(objetivo, -this.anguloMaximo, this.anguloMaximo);
+        this.anguloObjetivo = objetivo;
+
+        const actual = this.body.angle;
+        const nuevo = Phaser.Math.Angle.RotateTo(actual, objetivo, this.velocidadGiro * delta);
+
+        if (Math.abs(nuevo - actual) > 0.0001) {
+            Matter.Body.setAngle(this.body, nuevo);
+        }
+    };
     // ==========================================================
     // MOVIMIENTO
     // ==========================================================
@@ -223,6 +331,15 @@ export function iniciarCarpincho(personaje) {
         // COYOTE TIME: recordar el último instante en que tocó suelo
         if (this.enSuelo) this.ultimoSuelo = ahora;
         const puedeSaltar = ahora - this.ultimoSuelo < this.margenCoyote;
+
+        // AVISO DE ATERRIZAJE: el sensor toca algo tras haber estado en el aire
+        const labelSuelo = this.sensores.suelo.labelContacto;
+        if (labelSuelo) {
+            if (ahora - this.ultimoContactoSuelo > this.margenAire) {
+                this.emit('aterrizar', labelSuelo);
+            }
+            this.ultimoContactoSuelo = ahora;
+        }
 
         if (s >= this.umbralNado) {
             // NADANDO EN EL AGUA

@@ -36,7 +36,10 @@ export function crearSuperficieCurva(escena, puntos, opciones = {}) {
             friction: friccion,
             label: 'suelo_curvo'
         });
+
+        cuerpo.pendiente = Math.atan2(b.y - a.y, b.x - a.x);
         cuerpos.push(cuerpo);
+
     }
     return cuerpos;
 }
