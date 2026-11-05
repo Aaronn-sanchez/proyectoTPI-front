@@ -1,0 +1,38 @@
+h1 {
+    color: #ffffff;
+    margin-bottom: 20px;
+    font-family: "Poetsen One", sans-serif;
+}
+
+h1 span {
+    color: #275B17;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Centrado del menú (antes vivía en la caja) */
+.menu-caja {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-menu {
+    padding: 10px 20px;
+    background-color: #C4C7EA;
+    color: #ffffff;
+    font-size: 18px;
+    border-radius: 5px;
+    width: 200px;
+    text-align: center;
+    text-decoration: none;
+    font-family: "Potta One", system-ui;
+}
+
+.contenido {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    gap: 20px;
+}

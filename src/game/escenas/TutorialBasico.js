@@ -123,7 +123,6 @@ export default class TutorialBasico extends Scene {
 
         this.textoFps = this.add.text(8, 8, "", { color: "#084d27" }).setScrollFactor(0).setDepth(1000);
     }
-
     update(tiempo, delta) {
         if (!this.carpincho) return;
 

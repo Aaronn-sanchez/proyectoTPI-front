@@ -1,0 +1,26 @@
+/* Solo apariencia: colores y borde. El tamaño lo define el contenido */
+.caja-menu-base {
+    box-sizing: border-box;
+    z-index: 3;
+    background-color: #79A1CF;
+    border-radius: 25px;
+    outline: 18px solid #F89E38;
+    outline-offset: -18px;
+    width: fit-content;
+    /* se ajusta al ancho del contenido */
+    height: fit-content;
+    /* se ajusta al alto del contenido */
+    padding: 40px;
+    /* debe ser mayor a 18px (grosor del borde) */
+}
+
+/* Tamaños fijos OPCIONALES: solo se aplican si pasas size */
+.caja-menu-principal {
+    width: 380px;
+    height: 360px;
+}
+
+.caja-menu-amplia {
+    width: 600px;
+    height: 450px;
+}

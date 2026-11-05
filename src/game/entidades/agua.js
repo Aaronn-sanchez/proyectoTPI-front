@@ -24,7 +24,6 @@ export default class Agua {
         this.tam = tamCelda;
         this.columnas = columnas;
         this.filas = filas;
-
         // ---------- Parámetros de FLUIDO ----------
         this.arrastreLineal = 1.8;
         this.factorArrastreVertical = 1.5;

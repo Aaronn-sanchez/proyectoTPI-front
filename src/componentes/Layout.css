@@ -1,0 +1,52 @@
+.menu-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-color: #AFDEEB;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.imagen-nubes {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.imagen-suelo {
+    position: absolute;
+    bottom: -80px;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.cerrar-sesion {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 4;
+    padding: 10px 18px;
+    background-color: #ff6b6b;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: "Poetsen One", sans-serif;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.cerrar-sesion:hover {
+    background-color: #fa5252;
+    transform: translateY(-2px);
+}
