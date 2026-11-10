@@ -1,62 +1,12 @@
-import { Scene } from "phaser";
-import wachin from "../entidades/wachin.js";
-import Agua from "../entidades/agua.js";
-import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/carpincho.js";
+import Phaser, { Scene } from "phaser";
+import wachin from "../entidades/clases/wachin.js";
+import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/personajes/carpincho.js";
 import { crearSuperficieCurva } from "../utilidades/superficiesCurvas.js";
+import { TAM_TILE, CAPAS, CUERPOS_INTGRID, PROFUNDIDAD } from "../configs/constantes.js";
 
-// ============================================================
-// CONSTANTES
-// ============================================================
-
-// Nivel
+// Propias de esta escena
 const CLAVE_NIVEL = "nivel_0"; // key en el caché de Phaser
-const ID_NIVEL = "Level_0"; // identifier del nivel en LDtk
-const TAM_TILE = 16; // tamaño (px) de cada tile de los tilesets
-
-// Capas de LDtk
-const CAPAS = {
-    PASTITO: "Pastito",
-    POZITO: "Pozito",
-    HIERBAS: "Hierbas",
-    COLISIONES: "Colisiones",
-    ENTIDADES: "Entidades",
-};
-
-// Valores de la capa IntGrid "Colisiones"
-const INTGRID = {
-    PISO: 1,
-    AGUA: 2,
-    ROCA: 3,
-    TRONCO: 4
-};
-
-// Cuerpos Matter que genera cada valor del IntGrid.
-// Para sumar un bloque nuevo: agregá su valor en INTGRID y una línea acá.
-// (El agua no va acá: la maneja la clase Agua.)
-// Los cuerpos estáticos contiguos del mismo tipo se fusionan en uno solo.
-const CUERPOS_INTGRID = {
-    [INTGRID.PISO]: { isStatic: true, friction: 0.1, label: 'suelo' },
-    [INTGRID.CAJA]: { isStatic: false, friction: 0, label: 'caja' },
-    [INTGRID.ROCA]: { isStatic: true, friction: 0.1, label: 'roca', color: 0x8d8d8d, borde: 0x4a4a4a },
-    [INTGRID.TRONCO]: { isStatic: true, friction: 0.1, label: 'tronco', color: 0x8b5a2b, borde: 0x4e3218 },
-};
-
-const SONIDOS_CONTACTO = {
-    // roca:   { clave: "golpe_roca",   archivo: "/assets/audio/golpe_roca.mp3" },
-    // tronco: { clave: "golpe_madera", archivo: "/assets/audio/golpe_madera.mp3" },
-    // para cuando toque ponerle sonidos a los bloques de colision perrito
-};
-
-// Orden de dibujado (mayor = más adelante)
-const PROFUNDIDAD = {
-    CIELO: -100,
-    PASTO: 0,
-    CARPINCHO: 0,
-    PIEDRA: 1,
-    HIERBAS: 5,
-    AGUA: 5,
-    POZITO: 7,
-};
+const ID_NIVEL = "Level_0"; // sala de la que sale el spawn del carpincho
 
 // ============================================================
 // ESCENA
@@ -74,6 +24,9 @@ export default class TutorialBasico extends Scene {
         this.load.image("pastito_tiles", url + "pastitio.png");
         this.load.image("pozito_tiles", url + "pastito-pozito.png");
         this.load.image("hierbas", url + "pastito-pozito-con-hievas.png");
+        this.load.image("suelo_nivel2", url + "suelo_de_nivel2.png");
+        this.load.image("flor_espinas", url + "florecitas.png")
+        this.load.image('textura_caja', url + 'caja.png');
 
         this.load.json(CLAVE_NIVEL, "/assets/levels/humedal_level.json");
 
@@ -88,21 +41,6 @@ export default class TutorialBasico extends Scene {
         this.load.image("frame_7", url2 + "frame f2-1.png");
         this.load.image("frame_8", url2 + "frame f2-2.png");
         this.load.image("frame_9", url2 + "frame f2-3.png");
-
-        if (!this.textures.exists("gota")) {
-            const gotaCanvas = this.textures.createCanvas("gota", 6, 6);
-            const ctx = gotaCanvas.getContext();
-            ctx.fillStyle = "#ffffff";
-            ctx.beginPath();
-            ctx.arc(3, 3, 3, 0, Math.PI * 2);
-            ctx.fill();
-            gotaCanvas.refresh();
-        }
-
-        // Audio de contactos (la tabla está vacía hasta que haya archivos)
-        Object.values(SONIDOS_CONTACTO).forEach(({ clave, archivo }) => {
-            this.load.audio(clave, archivo);
-        });
     }
 
     create() {
@@ -111,69 +49,134 @@ export default class TutorialBasico extends Scene {
         const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
 
         // Límites físicos del mundo en Matter
-        this.matter.world.setBounds(0, 0, nivel.pxWid, nivel.pxHei);
+        const limites = this.calcularLimitesMundo(datosLDtk);
+        this.matter.world.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
 
+
+        this.crearMundo(datosLDtk);
         this.crearFondo();
-        this.crearCapasVisuales(nivel);
-        this.crearColisiones(nivel);
-        this.crearCarpincho(capaEntidades);
-        this.crearCamaraYControles(nivel);
-        this.carpincho.on("aterrizar", this.reproducirSonidoContacto, this);
-        this.crearCurvas(capaEntidades);
+        this.crearCarpincho(nivel);
+        this.crearCamaraYControles(limites);
 
-        this.textoFps = this.add.text(8, 8, "", { color: "#084d27" }).setScrollFactor(0).setDepth(1000);
+        console.log(
+            this.buscarCapa(datosLDtk.levels[1], CAPAS.ENTIDADES)
+                .entityInstances.find((e) => e.__identifier === "Planta_espinas"
+                )
+        );
+
     }
+
     update(tiempo, delta) {
         if (!this.carpincho) return;
 
-        // 1) Olas + flotabilidad y arrastre sobre el carpincho
-        if (this.agua) {
-            this.agua.actualizar(tiempo, delta);
-            this.agua.afectarCuerpo(this.carpincho, tiempo, delta);
-        }
-
-        // 2) Controles del carpincho (leen la sumersión que dejó el agua)
         this.carpincho.mover(this.teclas, this.teclasWASD, delta);
-        // 2b) Inclinar al carpincho según la pendiente
         this.carpincho.adaptarSueloCarpincho(delta);
 
-        // 3) Parallax del cielo
+        // --- Zoom y encuadre dinámico en el tramo de la bajada ---
+        const cam = this.cameras.main;
+        const enTramoBajada = this.carpincho.x > 1850 && this.carpincho.x < 2700;
+
+        // Si entra al tramo, acercamos el zoom a 1.35; si sale, vuelve a 1
+        const zoomObjetivo = enTramoBajada ? 1.35 : 1;
+        const offsetYObjetivo = enTramoBajada ? 90 : 110; // Levanta la vista para no mostrar debajo de Level_0
+
+        cam.setZoom(Phaser.Math.Linear(cam.zoom, zoomObjetivo, 0.05));
+        cam.followOffset.y = Phaser.Math.Linear(cam.followOffset.y, offsetYObjetivo, 0.05);
+
+        // Parallax del cielo
         if (this.fondoCielo) {
-            this.fondoCielo.tilePositionX = this.cameras.main.scrollX * 0.2;
+            this.fondoCielo.tilePositionX = cam.scrollX * 0.2;
         }
-
-        this.textoFps.setText(`FPS: ${Math.round(this.game.loop.actualFps)}`).setOrigin(-9.0, -0.3);
-
-        // 4) Sensores laterales (debug): imprime el label cuando cambia
-        const { izquierda, derecha, suelo } = this.carpincho.sensores;
-
-        if (izquierda.labelContacto !== izquierda.estadoAnterior) {
-            console.log("Sensor izquierdo:", izquierda.labelContacto ?? "nada");
-            izquierda.estadoAnterior = izquierda.labelContacto;
-        }
-
-        if (derecha.labelContacto !== derecha.estadoAnterior) {
-            console.log("Sensor derecho:", derecha.labelContacto ?? "nada");
-            derecha.estadoAnterior = derecha.labelContacto;
-        }
-
-        if (suelo.labelContacto !== suelo.estadoAnterior) {
-            console.log("Sensor de suelo:", suelo.labelContacto ?? "nada");
-            suelo.estadoAnterior = suelo.labelContacto;
-        }
-
-        console.log(
-            this.carpincho.sensores.suelo.labelContacto,
-            this.carpincho.anguloObjetivo.toFixed(2),
-            this.carpincho.body.angle.toFixed(2)
-        );
     }
 
     // ========================================================
     // HELPERS
-    // ========================================================
+    // =======================================================
+
+    crearPlantas(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES)
+        capaEntidades?.entityInstances.filter((e) => e.__identifier === "Planta_espinas").forEach((e) => {
+            const ancho = e.width;
+            const alto = e.height;
+
+            const posicion = { x: e.px[0] + nivel.worldX + ancho / 2, y: e.px[1] + nivel.worldY + alto / 2 }
+
+            const campos = Object.fromEntries(e.fieldInstances.map((f) => [f.__identifier, f.__value]));
+            if (!e.__tile) return;
+
+            const { x: recorteX, y: recorteY, w: recorteW, h: recorteH } = e.__tile;
+
+            const plantaTexture = this.textures.get('flor_espinas')
+            const framePlanta = `${recorteX}_${recorteY}_${recorteW}_${recorteH}`
+
+            if (!plantaTexture.has(framePlanta)) {
+                plantaTexture.add(framePlanta, 0, recorteX, recorteY, recorteW, recorteH);
+            }
+
+            const planta = this.matter.add.image(posicion.x, posicion.y, 'flor_espinas', framePlanta)
+
+            planta.setDisplaySize(ancho, alto);
+            planta.setDepth(PROFUNDIDAD.CARPINCHO);
+
+            planta.setRectangle(ancho, alto, {
+                isSensor: campos.es_sensor,
+                label: campos.label,
+                isStatic: true
+            });
+
+        })
+    }
+
+    crearCajas(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES)
+
+
+        capaEntidades?.entityInstances.filter((e) => e.__identifier === "Caja").forEach((e) => {
+            const ancho = e.width;
+            const alto = e.height;
+
+            const posicion = { x: e.px[0] + nivel.worldX, y: e.px[1] + nivel.worldY }
+            const campos = Object.fromEntries(e.fieldInstances.map((f) => [f.__identifier, f.__value]));
+
+            if (!campos.cajita_tile) return;
+
+            const { x: recorteX, y: recorteY, w: recorteW, h: recorteH } = campos.cajita_tile;
+
+            const cajaTexturas = this.textures.get('textura_caja')
+            const cajaFrame = `${recorteX}_${recorteY}_${recorteW}_${recorteH}`
+
+            if (!cajaTexturas.has(cajaFrame)) {
+                cajaTexturas.add(cajaFrame, 0, recorteX, recorteY, recorteW, recorteH);
+            }
+
+            const caja = this.matter.add.image(posicion.x, posicion.y, 'textura_caja', cajaFrame)
+
+            caja.setDisplaySize(ancho, alto);
+            caja.setDepth(PROFUNDIDAD.CARPINCHO);
+
+            caja.setRectangle(ancho, alto, {
+                friction: 0.5,
+                label: campos.label,
+                density: campos.densidad ?? 0.002
+            });
+
+        })
+
+    }
+    // ----------------------------------------------------
     buscarCapa(nivel, identificador) {
         return nivel.layerInstances.find((l) => l.__identifier === identificador);
+    }
+
+    crearMundo(datosLDtk) {
+        datosLDtk.levels.forEach((nivel) => {
+
+            this.crearCapasVisuales(nivel);
+            this.crearColisiones(nivel);
+            this.crearCurvas(nivel);
+            this.crearCajas(nivel)
+            this.crearPlantas(nivel)
+        });
     }
 
     // ========================================================
@@ -218,10 +221,13 @@ export default class TutorialBasico extends Scene {
         this.crearCapaTiles(nivel, CAPAS.PASTITO, "pastito_tiles", "pasto", PROFUNDIDAD.PASTO);
         this.crearCapaTiles(nivel, CAPAS.POZITO, "pozito_tiles", "pozo", PROFUNDIDAD.POZITO);
         this.crearCapaTiles(nivel, CAPAS.HIERBAS, "hierbas", "hierba", PROFUNDIDAD.HIERBAS);
+        this.crearCapaTiles(nivel, CAPAS.PASTITO3, "suelo_nivel2", "suelo2", PROFUNDIDAD.PASTITO3);
+
     }
 
     crearCapaTiles(nivel, nombreCapa, claveTextura, prefijo, profundidad) {
         const capa = this.buscarCapa(nivel, nombreCapa);
+
         if (!capa) return;
 
         const textura = this.textures.get(claveTextura);
@@ -235,7 +241,7 @@ export default class TutorialBasico extends Scene {
             }
 
             const imagen = this.add
-                .image(tile.px[0], tile.px[1], claveTextura, nombreFrame)
+                .image(tile.px[0] + nivel.worldX, tile.px[1] + nivel.worldY, claveTextura, nombreFrame)
                 .setOrigin(0, 0)
                 .setDepth(profundidad);
 
@@ -246,9 +252,9 @@ export default class TutorialBasico extends Scene {
     }
 
     // ========================================================
-    // CAPA DE COLISIONES: cuerpos en Matter + Agua
-    // Las celdas estáticas contiguas del mismo tipo se fusionan en
-    // rectángulos grandes (sin costuras). Las dinámicas van de a una.
+    // CAPA DE COLISIONES: cuerpos estáticos en Matter
+    // Las celdas contiguas del mismo tipo se fusionan en
+    // rectángulos grandes (sin costuras).
     // ========================================================
     crearColisiones(nivel) {
         const capa = this.buscarCapa(nivel, CAPAS.COLISIONES);
@@ -266,16 +272,9 @@ export default class TutorialBasico extends Scene {
                 const idx = cy * anchoCeldas + cx;
                 const valor = csv[idx];
                 const def = CUERPOS_INTGRID[valor];
-                if (!def || visitado[idx]) continue; // vacío, agua o ya fusionada
+                if (!def || visitado[idx]) continue; // vacío, sin definición o ya fusionada
 
-                // Celdas dinámicas (cajas): una por una, sin fusionar
-                if (!def.isStatic) {
-                    visitado[idx] = true;
-                    this.crearBloque(cx, cy, 1, 1, gridSize, def);
-                    continue;
-                }
-
-                // Estáticas: extender a lo ancho...
+                // Extender a lo ancho...
                 let w = 1;
                 while (cx + w < anchoCeldas && csv[idx + w] === valor && !visitado[idx + w]) w++;
 
@@ -295,27 +294,18 @@ export default class TutorialBasico extends Scene {
                     }
                 }
 
-                this.crearBloque(cx, cy, w, h, gridSize, def);
+                this.crearBloque(cx, cy, w, h, gridSize, def, nivel.worldX, nivel.worldY);
             }
         }
-
-        this.agua = new Agua(this, {
-            intGrid: csv,
-            columnas: anchoCeldas,
-            filas: altoCeldas,
-            tamCelda: gridSize,
-            valorAgua: INTGRID.AGUA,
-            profundidad: PROFUNDIDAD.AGUA,
-        });
     }
 
     // Crea un cuerpo (con dibujo opcional) que cubre w x h celdas desde (cx, cy)
-    crearBloque(cx, cy, w, h, gridSize, def) {
+    crearBloque(cx, cy, w, h, gridSize, def, offsetX = 0, offsetY = 0) {
         const { color, borde, ...opciones } = def;
         const ancho = w * gridSize;
         const alto = h * gridSize;
-        const posX = cx * gridSize + ancho / 2;
-        const posY = cy * gridSize + alto / 2;
+        const posX = cx * gridSize + ancho / 2 + offsetX;
+        const posY = cy * gridSize + alto / 2 + offsetY;
 
         if (color != null) {
             // Rectángulo visible + cuerpo Matter atados entre sí
@@ -332,10 +322,14 @@ export default class TutorialBasico extends Scene {
     // ========================================================
     // NACIMIENTO DEL CARPINCHO
     // ========================================================
-    crearCarpincho(capaEntidades) {
+    crearCarpincho(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
         const spawn = capaEntidades?.entityInstances.find((e) => e.__identifier === "Spawn_carpincho");
-        const inicioX = spawn ? spawn.px[0] : 160;
-        const inicioY = spawn ? spawn.px[1] : 288;
+
+        const inicioX = spawn ? spawn.px[0] + spawn.width / 2 + nivel.worldX : 160;
+        const inicioY = spawn ? spawn.px[1] + spawn.height / 2 + nivel.worldY : 288;
+
+        this.puntoRespawn = { x: inicioX, y: inicioY };
 
         // Normaliza los frames (48x48, pies alineados) ANTES de crear al carpincho
         prepararFramesCarpincho(this);
@@ -346,10 +340,14 @@ export default class TutorialBasico extends Scene {
     // ========================================================
     // CÁMARA Y CONTROLES
     // ========================================================
-    crearCamaraYControles(nivel) {
-        this.cameras.main.setBounds(0, 0, nivel.pxWid, nivel.pxHei);
-        this.cameras.main.startFollow(this.carpincho, true, 0.08, 0.08);
-        this.cameras.main.setFollowOffset(0, -100);
+    crearCamaraYControles(limites) {
+        const cam = this.cameras.main;
+
+        cam.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
+        cam.startFollow(this.carpincho, true, 0.08, 0.08);
+        cam.setFollowOffset(0, 150);
+
+        cam.centerOn(this.carpincho.x, this.carpincho.y - 150);
 
         this.teclas = this.input.keyboard.createCursorKeys();
         this.teclasWASD = this.input.keyboard.addKeys("W,A,S,D,SPACE");
@@ -358,7 +356,8 @@ export default class TutorialBasico extends Scene {
     // ========================================================
     // SUPERFICIES CURVAS (entidades "Curva" de LDtk)
     // ========================================================
-    crearCurvas(capaEntidades) {
+    crearCurvas(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
         const gridCurva = capaEntidades?.__gridSize ?? 16;
 
         capaEntidades?.entityInstances
@@ -370,18 +369,21 @@ export default class TutorialBasico extends Scene {
                 const pts = campo.__value
                     .filter((p) => p !== null)
                     .map((p) => ({
-                        x: (p.cx + 0.5) * gridCurva,
-                        y: p.cy * gridCurva,
+                        x: (p.cx + 0.5) * gridCurva + nivel.worldX,
+                        y: p.cy * gridCurva + nivel.worldY,
                     }))
                     .sort((a, b) => a.x - b.x);
 
-                crearSuperficieCurva(this, pts, { grosor: 24, subdivisiones: 8 });
+                crearSuperficieCurva(this, pts, { grosor: 15, subdivisiones: 8 });
             });
     }
 
-    reproducirSonidoContacto(label) {
-        const config = SONIDOS_CONTACTO[label];
-        if (!config || !this.cache.audio.exists(config.clave)) return; // sin sonido configurado
-        this.sound.play(config.clave);
+    calcularLimitesMundo(datosLDtk) {
+        const niveles = datosLDtk.levels;
+        const x = Math.min(...niveles.map((n) => n.worldX));
+        const y = Math.min(...niveles.map((n) => n.worldY));
+        const derecha = Math.max(...niveles.map((n) => n.worldX + n.pxWid));
+        const abajo = Math.max(...niveles.map((n) => n.worldY + n.pxHei));
+        return { x, y, ancho: derecha - x, alto: abajo - y };
     }
 }

@@ -9,6 +9,8 @@ export default function ConfigUsuario() {
                 <main>
                     <h1>Configuración de Usuario</h1>
                     <p>Aquí puedes configurar tu perfil y preferencias.</p>
+
+                    <button className="btn-azul btn-atras" onClick={() => window.history.back()}>← Atras</button>
                 </main>
 
             </Caja>

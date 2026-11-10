@@ -80,7 +80,7 @@ export function iniciarCarpincho(personaje) {
     personaje.sueloActual = null;   // cuerpo sobre el que está parado (piso, caja, etc.)
 
     // Coyote time: margen (ms) para saltar justo después de dejar el suelo
-    personaje.margenCoyote = 1000;
+    personaje.margenCoyote = 150;
     personaje.ultimoSuelo = -1000;
 
     // Sprite fijo mientras está en el aire
