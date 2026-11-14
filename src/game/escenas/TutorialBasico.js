@@ -2,7 +2,7 @@ import Phaser, { Scene } from "phaser";
 import wachin from "../entidades/clases/wachin.js";
 import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/personajes/carpincho.js";
 import { crearSuperficieCurva } from "../utilidades/superficiesCurvas.js";
-import { TAM_TILE, CAPAS, CUERPOS_INTGRID, PROFUNDIDAD } from "../configs/constantes.js";
+import { TAM_TILE, CAPAS, CUERPOS_INTGRID, PROFUNDIDAD, SONIDOS_CONTACTO } from "../configs/constantes.js";
 
 // Propias de esta escena
 const CLAVE_NIVEL = "nivel_0"; // key en el caché de Phaser
@@ -14,12 +14,20 @@ const ID_NIVEL = "Level_0"; // sala de la que sale el spawn del carpincho
 export default class TutorialBasico extends Scene {
     constructor() {
         super("tutorialBasico");
+        this.puertas = [];
     }
 
     preload() {
+
+        // efectos de sonido
+        Object.values(SONIDOS_CONTACTO).forEach(({ clave, archivo }) => {
+            this.load.audio(clave, archivo);
+        });
+        // las URLs xd
         const url = "/assets/sprites/escenario/";
         const url2 = "/assets/sprites/carpincho/";
 
+        // las imagenes que usamos pe
         this.load.image("cielo", url + "background-cielo.png");
         this.load.image("pastito_tiles", url + "pastitio.png");
         this.load.image("pozito_tiles", url + "pastito-pozito.png");
@@ -27,6 +35,9 @@ export default class TutorialBasico extends Scene {
         this.load.image("suelo_nivel2", url + "suelo_de_nivel2.png");
         this.load.image("flor_espinas", url + "florecitas.png")
         this.load.image('textura_caja', url + 'caja.png');
+        this.load.image("banderin_checkpoint", url + "banderin-checkpoint.png");
+        this.load.image("boton", url + "boton.png");
+        this.load.image("boton_presionado", url + "boton-presionado.png");
 
         this.load.json(CLAVE_NIVEL, "/assets/levels/humedal_level.json");
 
@@ -52,16 +63,16 @@ export default class TutorialBasico extends Scene {
         const limites = this.calcularLimitesMundo(datosLDtk);
         this.matter.world.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
 
-
         this.crearMundo(datosLDtk);
         this.crearFondo();
         this.crearCarpincho(nivel);
+        this.crearDeteccionContactos();
         this.crearCamaraYControles(limites);
+        this.botonRespawn(nivel);
 
         console.log(
-            this.buscarCapa(datosLDtk.levels[1], CAPAS.ENTIDADES)
-                .entityInstances.find((e) => e.__identifier === "Planta_espinas"
-                )
+            this.buscarCapa(datosLDtk.levels[2], CAPAS.ENTIDADES)
+                .entityInstances.find((e) => e.__identifier === "Boton_peso")
         );
 
     }
@@ -72,7 +83,7 @@ export default class TutorialBasico extends Scene {
         this.carpincho.mover(this.teclas, this.teclasWASD, delta);
         this.carpincho.adaptarSueloCarpincho(delta);
 
-        // --- Zoom y encuadre dinámico en el tramo de la bajada ---
+        // Zoom y encuadre dinámico en el tramo de la bajada
         const cam = this.cameras.main;
         const enTramoBajada = this.carpincho.x > 1850 && this.carpincho.x < 2700;
 
@@ -88,16 +99,341 @@ export default class TutorialBasico extends Scene {
             this.fondoCielo.tilePositionX = cam.scrollX * 0.2;
         }
     }
-
-    // ========================================================
+    // =======================================================
     // HELPERS
     // =======================================================
+
+    botonRespawn() {
+        const boton = this.add.image(this.width - 40, 40, 'textura_caja')
+            .setInteractive()
+            .setScrollFactor(0)
+            .setDepth(100);
+    }
+
+    activarBoton(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
+
+        capaEntidades?.entityInstances.filter((e) => e.__identifier === "Boton_peso").forEach((e) => {
+
+            const campos = Object.fromEntries(
+                e.fieldInstances.map((f) => [f.__identifier, f.__value])
+            );
+
+            console.log("Objetivo del botón:", campos.objetivo);
+
+            const ancho = e.width;
+            const alto = e.height;
+
+            const posicion = {
+                x: e.px[0] + nivel.worldX,
+                y: e.px[1] + nivel.worldY
+            };
+
+
+            if (!campos.Tile_boton || !campos.Tile_boton_presionado) return;
+
+
+            const {
+                x: xNormal,
+                y: yNormal,
+                w: wNormal,
+                h: hNormal
+            } = campos.Tile_boton;
+
+
+            const {
+                x: xPresionado,
+                y: yPresionado,
+                w: wPresionado,
+                h: hPresionado
+            } = campos.Tile_boton_presionado;
+
+            const texturaNormal = this.textures.get("boton");
+            const texturaPresionada = this.textures.get("boton_presionado");
+
+            const frameNormal = `${xNormal}_${yNormal}_${wNormal}_${hNormal}`;
+            const framePresionado = `${xPresionado}_${yPresionado}_${wPresionado}_${hPresionado}`;
+
+            if (!texturaNormal.has(frameNormal)) {
+                texturaNormal.add(frameNormal, 0, xNormal, yNormal, wNormal, hNormal);
+            }
+
+            if (!texturaPresionada.has(framePresionado)) {
+                texturaPresionada.add(framePresionado, 0, xPresionado, yPresionado, wPresionado, hPresionado
+                );
+            }
+
+            const boton = this.matter.add.image(posicion.x, posicion.y, "boton", frameNormal);
+
+            boton.setDisplaySize(ancho, alto);
+            boton.setDepth(PROFUNDIDAD.PIEDRA);
+
+            boton.setRectangle(ancho, alto, {
+                isSensor: true,
+                isStatic: true,
+                label: "Boton_peso"
+            });
+
+            boton.body.tags = e.__tags || [];
+
+            console.log("Tags del botón:", boton.body.tags);
+
+            boton.body.activado = false;
+
+            boton.body.objetoVisual = boton;
+            boton.body.framePresionado = framePresionado;
+            boton.body.frameNormal = frameNormal;
+            boton.body.objetivo = campos.objetivo;
+        });
+    }
+
+    crearCheckpoints(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES)
+        capaEntidades?.entityInstances.filter((e) => e.__identifier === "Enty_Checkpoint").forEach((e) => {
+            const campos = Object.fromEntries(e.fieldInstances.map((f) => [f.__identifier, f.__value]));
+
+            const ancho = e.width;
+            const alto = e.height;
+
+            const posicion = { x: e.px[0] + nivel.worldX, y: e.px[1] + nivel.worldY }
+
+            if (!campos.checkpoint_tile) return;
+
+            const { x: recorteX, y: recorteY, w: recorteW, h: recorteH } = campos.checkpoint_tile;
+
+            const textura_checkpoint = this.textures.get("banderin_checkpoint");
+            const frame = `${recorteX}_${recorteY}_${recorteW}_${recorteH}`;
+
+            if (!textura_checkpoint.has(frame)) {
+                textura_checkpoint.add(frame, 0, recorteX, recorteY, recorteW, recorteH);
+            }
+
+            const banderin = this.matter.add.image(posicion.x, posicion.y, "banderin_checkpoint", frame);
+
+            banderin.setDisplaySize(ancho, alto);
+            banderin.setDepth(PROFUNDIDAD.PIEDRA);
+
+            banderin.setRectangle(ancho, alto, {
+                isSensor: campos.es_sensor,
+                isStatic: true,
+                label: campos.label,
+            });
+            banderin.body.tags = e.__tags || [];
+            console.log("Tags del checkpoint:", banderin.body.tags);
+
+            banderin.body.activado = false;
+        })
+    }
+
+    activarCheckpoint(sensor) {
+        if (sensor.activado) return;   // ya estaba guardado
+
+        sensor.activado = true;
+        this.puntoRespawn = { x: sensor.position.x, y: sensor.position.y };
+
+        this.sound.play(SONIDOS_CONTACTO.pop.clave);
+
+        console.log("checkpoint guardado:", this.puntoRespawn);
+    }
+
+    reaparecerCarpincho() {
+
+        const { x, y } = this.puntoRespawn;
+
+        this.carpincho.setPosition(x, y);
+
+        this.carpincho.setVelocity(0, 0);
+
+        this.sound.play(SONIDOS_CONTACTO.pop.clave);
+
+        console.log("Carpincho reapareció en:", x, y);
+    }
+
+
+    crearDeteccionContactos() {
+        this.matter.world.on("collisionstart", (evento) => {
+            evento.pairs.forEach(({ bodyA, bodyB }) => {
+
+                const detectable =
+                    bodyA.tags?.includes("detectable") ||
+                    bodyB.tags?.includes("detectable");
+
+                if (!detectable) return;
+
+                this.procesarColision(bodyA, bodyB);
+            });
+        });
+    }
+
+
+    procesarColision(bodyA, bodyB) {
+        this.resolverInteraccion(bodyA, bodyB);
+
+    }
+
+
+
+    resolverInteraccion(bodyA, bodyB) {
+
+        // Identificar el cuerpo principal si es compuesto
+        const obtenerCuerpoPrincipal = (body) =>
+            body.parent && body.parent !== body
+                ? body.parent
+                : body;
+
+        const cuerpoA = obtenerCuerpoPrincipal(bodyA);
+        const cuerpoB = obtenerCuerpoPrincipal(bodyB);
+
+        // Buscar si alguno de los cuerpos es accionable
+        const accionable = [cuerpoA, cuerpoB].find((body) =>
+            body.tags?.includes("accionable")
+        );
+
+        if (accionable) {
+
+            const otroCuerpo = accionable === cuerpoA ? cuerpoB : cuerpoA;
+
+            if (!otroCuerpo.peso) return;
+
+            // Comportamiento del botón
+            if (accionable.label === "Boton_peso") {
+
+                if (accionable.activado) return;
+
+                accionable.activado = true;
+
+                const puerta = this.puertas.find(
+                    (p) => p.iid === accionable.objetivo?.entityIid
+                );
+
+                console.log("Puerta encontrada:", puerta);
+
+                if (puerta && !puerta.abierta) {
+                    puerta.abierta = true;
+
+                    // Quitamos la colisión para permitir el paso
+                    this.matter.world.remove(puerta);
+
+                    // Hacemos desaparecer la puerta gradualmente
+                    this.tweens.add({
+                        targets: puerta.objetoVisual,
+                        alpha: 0,
+                        duration: 1200,
+                        ease: "Linear",
+                        onComplete: () => {
+                            puerta.objetoVisual.destroy();
+                        }
+                    });
+                }
+
+                accionable.objetoVisual.setTexture(
+                    "boton_presionado",
+                    accionable.framePresionado
+                );
+
+                console.log("Botón presionado");
+                this.sound.play(SONIDOS_CONTACTO.pop.clave)
+                return;
+            }
+
+            // Comportamiento de la puerta
+            if (accionable.label === "Puerta") {
+
+                console.log("Entidad accionable: Puerta");
+
+                return;
+            }
+        }
+
+        // Identificar al carpincho
+        const esCarpincho = (body) =>
+            body === this.carpincho.body ||
+            body.parent === this.carpincho.body;
+
+        let objeto;
+
+        if (esCarpincho(bodyA)) {
+            if (bodyA.isSensor) return;
+            objeto = bodyB;
+
+        } else if (esCarpincho(bodyB)) {
+            if (bodyB.isSensor) return;
+            objeto = bodyA;
+
+        } else {
+            return;
+        }
+
+        const tags = objeto.tags || [];
+
+        // Daño
+        if (tags.includes("entidad_danio")) {
+            this.reaparecerCarpincho();
+            return;
+        }
+
+        // Checkpoint
+        if (tags.includes("guardado")) {
+            this.activarCheckpoint(objeto);
+            return;
+        }
+    }
+
+
+    crearPuerta(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
+
+        capaEntidades?.entityInstances
+            .filter((e) => e.__identifier === "Puerta")
+            .forEach((e) => {
+                const posicion = {
+                    x: e.px[0] + nivel.worldX,
+                    y: e.px[1] + nivel.worldY
+                };
+
+                // Obtenemos el color asignado a la entidad en LDtk
+                const color = Phaser.Display.Color.HexStringToColor(
+                    e.__smartColor || "#8b5a2b"
+                ).color;
+
+                // Creamos la representación visual de la puerta
+                const visual = this.add.rectangle(
+                    posicion.x,
+                    posicion.y,
+                    e.width,
+                    e.height,
+                    color
+                );
+
+                // Le agregamos el cuerpo físico de Matter
+                this.matter.add.gameObject(visual, {
+                    isStatic: true,
+                    label: "Puerta"
+                });
+
+                const puerta = visual.body;
+
+                puerta.tags = e.__tags || [];
+                puerta.abierta = false;
+                puerta.iid = e.iid;
+                puerta.objetoVisual = visual;
+
+                this.puertas.push(puerta);
+
+                console.log("Puerta creada:", puerta.iid);
+                console.log("Color de la puerta:", e.__smartColor);
+            });
+    }
+
+
+
 
     crearPlantas(nivel) {
         const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES)
         capaEntidades?.entityInstances.filter((e) => e.__identifier === "Planta_espinas").forEach((e) => {
             const ancho = e.width;
             const alto = e.height;
+            const tags_group = e.__tags
 
             const posicion = { x: e.px[0] + nivel.worldX + ancho / 2, y: e.px[1] + nivel.worldY + alto / 2 }
 
@@ -119,11 +455,14 @@ export default class TutorialBasico extends Scene {
             planta.setDepth(PROFUNDIDAD.CARPINCHO);
 
             planta.setRectangle(ancho, alto, {
+
                 isSensor: campos.es_sensor,
                 label: campos.label,
                 isStatic: true
             });
 
+            planta.body.tags = tags_group;
+            console.log("Tags de la planta:", planta.body.tags);
         })
     }
 
@@ -157,9 +496,13 @@ export default class TutorialBasico extends Scene {
             caja.setRectangle(ancho, alto, {
                 friction: 0.5,
                 label: campos.label,
-                density: campos.densidad ?? 0.002
+                density: campos.densidad ?? 0.002,
             });
 
+            caja.body.tags = e.__tags || [];
+            caja.body.peso = true;
+
+            console.log("Tags de la caja:", caja.body.tags);
         })
 
     }
@@ -176,6 +519,9 @@ export default class TutorialBasico extends Scene {
             this.crearCurvas(nivel);
             this.crearCajas(nivel)
             this.crearPlantas(nivel)
+            this.crearCheckpoints(nivel)
+            this.activarBoton(nivel)
+            this.crearPuerta(nivel)
         });
     }
 
@@ -329,6 +675,7 @@ export default class TutorialBasico extends Scene {
         const inicioX = spawn ? spawn.px[0] + spawn.width / 2 + nivel.worldX : 160;
         const inicioY = spawn ? spawn.px[1] + spawn.height / 2 + nivel.worldY : 288;
 
+
         this.puntoRespawn = { x: inicioX, y: inicioY };
 
         // Normaliza los frames (48x48, pies alineados) ANTES de crear al carpincho
@@ -336,6 +683,8 @@ export default class TutorialBasico extends Scene {
         this.carpincho = new wachin(this, inicioX, inicioY, "carpincho", iniciarCarpincho);
         this.carpincho.setDepth(PROFUNDIDAD.CARPINCHO);
     }
+
+
 
     // ========================================================
     // CÁMARA Y CONTROLES

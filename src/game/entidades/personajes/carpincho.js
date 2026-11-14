@@ -59,7 +59,7 @@ export function iniciarCarpincho(personaje) {
     //nodoymaswacho 
 
     personaje.peso = true;
-    personaje.velocidadTierra = 4.5;
+    personaje.velocidadTierra = 7.5;
     personaje.fuerzaSalto = -8.5 * Math.sqrt(ESCALA); // más grande = salto más fuerte
 
     // Frenado gradual al soltar las teclas (más cerca de 1 = frena más lento)
@@ -176,6 +176,7 @@ export function iniciarCarpincho(personaje) {
     };
 
     personaje.setExistingBody(compuesto);
+    personaje.body.peso = personaje.peso;
     personaje.setFixedRotation();
     personaje.setPosition(x, y);
 

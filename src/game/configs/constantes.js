@@ -37,3 +37,10 @@ export const PROFUNDIDAD = {
     HIERBAS: 5,
     POZITO: 7,
 };
+
+export const SONIDOS_CONTACTO = {
+    pop: {
+        clave: "contacto_check",
+        archivo: "../../../public/assets/audio/pop_up.mp3"
+    }
+};
