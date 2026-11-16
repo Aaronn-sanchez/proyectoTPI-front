@@ -25,7 +25,7 @@ export default function Juego() {
             overflow: 'hidden'
         }}>
             <div ref={contenedor} />
-            <Link href="/" id="menu-link">
+            <Link href="/menu" id="menu-link">
                 Menú
             </Link>
         </div >

@@ -2,10 +2,17 @@ import { Link } from 'wouter';
 import CajaMenu from '../../componentes/Caja.jsx';
 import './menu.css';
 import Layout from '../../componentes/Layout.jsx';
+import { obtenerPerfil } from '../../api/auth.js';
+import Perfil from '../../componentes/usuario-cuenta/perfil.jsx';
+import PerfilMini from '../../componentes/miniperfil/miniP.jsx';
 
 export default function Menu() {
+
     return (
         <Layout>
+            <PerfilMini>
+
+            </PerfilMini>
             <CajaMenu size="principal" className="menu-caja">
                 <div className="contenido">
                     <h1>Cozzy<span>&</span>Cosso</h1>
@@ -16,4 +23,5 @@ export default function Menu() {
             </CajaMenu>
         </Layout>
     );
+
 }
