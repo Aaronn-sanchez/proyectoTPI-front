@@ -19,7 +19,6 @@ export default function Login() {
         try {
             const datos = await login(email, password);
 
-            console.log("Salió bien:", datos);
             localStorage.setItem('token', datos.token);
             localStorage.setItem('usuario', JSON.stringify(datos.usuario));
 

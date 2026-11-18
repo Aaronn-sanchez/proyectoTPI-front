@@ -85,7 +85,7 @@ export default function Registro() {
 
                         <div className="botoncitos-registro">
                             <Link href="/" className="btn-menu">Iniciar sesión</Link>
-                            <button className="btn-menu" type="submit">Registrarse →</button>
+                            <button className="btn-menu btn-registro" type="submit">Registrarse →</button>
                         </div>
                     </form>
                 </main>

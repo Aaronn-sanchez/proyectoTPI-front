@@ -6,6 +6,8 @@ import Niveles from './pages/Niveles-react/niveles-seleccion.jsx';
 import ConfiguracionesUs from './pages/ConfigUsuario/configUsu.jsx'
 import Registro from './pages/Registro/registro.jsx';
 import Login from './pages/Login/login.jsx';
+import Logros from './pages/Logros/logros.jsx';
+import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
 
 import { useState, useEffect } from 'react';
 import { obtenerPerfil } from './api/auth';
@@ -41,8 +43,11 @@ export default function App() {
 
     <Switch>
       <Route path="/" component={Login} />
+      <Route path="/login" component={Login} />
       <Route path="/registro" component={Registro} />
 
+      <Route path="/misLogros" component={Logros} />
+      <Route path="/listaUsuarios" component={ListaUsers} />
       <Route path="/menu" component={Menu} />
       <Route path="/niveles" component={Niveles} />
       <Route path="/jugar/tutorial" component={Juego} />

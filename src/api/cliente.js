@@ -10,7 +10,10 @@ const api = axios.create({
 api.interceptors.response.use(
     (respuesta) => respuesta,
     (error) => {
-        if (error.response?.status === 401 && localStorage.getItem('token')) {
+        const url = error.config?.url || '';
+        const esAuth = url.includes('/api/auth/login') || url.includes('/api/auth/register');
+
+        if (error.response?.status === 401 && localStorage.getItem('token') && !esAuth) {
             cerrarSesion();
         }
         return Promise.reject(error);

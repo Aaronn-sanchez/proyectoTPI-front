@@ -21,3 +21,13 @@ export async function obtenerPerfil() {
     const respuesta = await api.get('/api/auth/me');
     return respuesta.data;
 }
+
+export async function actualizarNombre(nombre) {
+    const respuesta = await api.patch('/api/auth/me', { nombre });
+    return respuesta.data;
+}
+
+export async function eliminarCuenta() {
+    const respuesta = await api.delete('/api/auth/me');
+    return respuesta.data;
+}
