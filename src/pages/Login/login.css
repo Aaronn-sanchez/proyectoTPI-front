@@ -1,0 +1,21 @@
+.campo-password {
+    position: relative;
+}
+
+.btn-ojito {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    height: 46px;
+    /* la misma altura que el input */
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.msg-error-form {
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: #ffd1d1;
+}
