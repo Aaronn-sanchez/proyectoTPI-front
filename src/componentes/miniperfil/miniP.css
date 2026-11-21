@@ -1,0 +1,28 @@
+.perfil-mini {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f79d3a;
+    /* el naranja de tus cajas, o el que prefieras */
+    color: #ffffff;
+    font-family: "Poetsen One", sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.overlay-perfil {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.55);
+}
