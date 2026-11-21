@@ -38,7 +38,6 @@ export default function App() {
   if (!token && esPrivada) return <Redirect to="/" />;
   if (token && esPublica) return <Redirect to="/menu" />;
 
-
   return (
 
     <Switch>
