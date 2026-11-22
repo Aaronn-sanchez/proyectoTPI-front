@@ -1,13 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { crearConfig } from '../game/config';
+import MenuPausa from "../componentes/menu-de-pausa/MenuPausa.jsx";
 import '../App.css';
+
+// Ajustá la ruta de ajustes a la que tengas definida
+const RUTA_MENU = '/menu';
+const RUTA_AJUSTES = '/ajustes';
+
 
 
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
+    const escenasPausadas = useRef([]);
+    const [, navigate] = useLocation();
+    const [pausado, setPausado] = useState(false);
 
     useEffect(() => {
         if (juego.current) return;
@@ -19,6 +28,29 @@ export default function Juego() {
         };
     }, []);
 
+    // Esc abre y cierra la pausa
+    useEffect(() => {
+        function alTeclear(e) {
+            if (e.key === 'Escape') setPausado((p) => !p);
+        }
+        window.addEventListener('keydown', alTeclear);
+        return () => window.removeEventListener('keydown', alTeclear);
+    }, []);
+
+    // Pausa o reanuda las escenas de Phaser según el estado
+    useEffect(() => {
+        const escenas = juego.current?.scene;
+        if (!escenas) return;
+
+        if (pausado) {
+            escenasPausadas.current = escenas.getScenes(true); // las que están corriendo
+            escenasPausadas.current.forEach((s) => s.scene.pause());
+        } else {
+            escenasPausadas.current.forEach((s) => s.scene.resume());
+            escenasPausadas.current = [];
+        }
+    }, [pausado]);
+
     return (
         <div style={{
             width: '100vw', height: '100vh', backgroundColor: '#1a1a1a',
@@ -26,9 +58,17 @@ export default function Juego() {
             overflow: 'hidden'
         }}>
             <div ref={contenedor} />
-            <Link href="/menu" id="menu-link">
+            <Link href={RUTA_MENU} id="menu-link">
                 Menú
             </Link>
-        </div >
+
+            {pausado && (
+                <MenuPausa
+                    onSeguir={() => setPausado(false)}
+                    onSalir={() => navigate(RUTA_MENU)}
+                    onAjustes={() => navigate(RUTA_AJUSTES)}
+                />
+            )}
+        </div>
     );
 }
