@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { Link, useLocation } from 'wouter';
 import { crearConfig } from '../game/config';
-import MenuPausa from "../componentes/menu-de-pausa/MenuPausa.jsx";
 import '../App.css';
 
 // Ajustá la ruta de ajustes a la que tengas definida
