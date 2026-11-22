@@ -1,12 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
-import { Link } from 'wouter';
 import { crearConfig } from '../game/config';
 import '../App.css';
+import { useLocation } from 'wouter';
+import MenuPausa from '../componentes/menuPausa/MenuPausa';
 
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
+    const [pausado, setPausado] = useState(false);
+    const [, setLocation] = useLocation();
 
     useEffect(() => {
         if (juego.current) return;
@@ -18,6 +21,28 @@ export default function Juego() {
         };
     }, []);
 
+    // para que el juego detecte el pausado 
+    useEffect(() => {
+        if (pausado) {
+            juego.current.scene.pause('tutorialBasico');
+        } else {
+            juego.current.scene.resume('tutorialBasico');
+        }
+    }, [pausado])
+
+
+    useEffect(() => {
+        const alApretar = (e) => {
+            if (e.key === 'Escape') {
+                setPausado((p) => !p);
+            }
+        };
+
+        window.addEventListener('keydown', alApretar);
+        return () => window.removeEventListener('keydown', alApretar);
+    }, []);
+
+
     return (
         <div style={{
             width: '100vw', height: '100vh', backgroundColor: '#1a1a1a',
@@ -25,9 +50,16 @@ export default function Juego() {
             overflow: 'hidden'
         }}>
             <div ref={contenedor} />
-            <Link href="/menu" id="menu-link">
+            <button id="menu-link" onClick={() => setPausado(true)}>
                 Menú
-            </Link>
+            </button>
+            {pausado && (
+                <MenuPausa
+                    onContinuar={() => setPausado(false)}
+                    onAjustes={() => { }}
+                    onSalir={() => setLocation('/niveles')}
+                />
+            )}
         </div >
     );
 }

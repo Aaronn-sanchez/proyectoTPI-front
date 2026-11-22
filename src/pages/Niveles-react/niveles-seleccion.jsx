@@ -38,7 +38,7 @@ export default function Niveles() {
                 <img className="nivel nivel-5" src={nivel5} alt="Nivel 5" />
             </div>
 
-            <button className="btn-azul btn-atras" onClick={() => window.history.back()}>← Atras</button>
+            <button className="btn-azul btn-atras" onClick={() => window.location.href = '/menu'}>← Atras</button>
             <button className="btn-azul btn-jugar">Jugar →</button>
         </div>
     );
