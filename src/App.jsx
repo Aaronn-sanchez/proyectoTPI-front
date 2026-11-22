@@ -8,12 +8,18 @@ import Registro from './pages/Registro/registro.jsx';
 import Login from './pages/Login/login.jsx';
 import Logros from './pages/Logros/logros.jsx';
 import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
+import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
 
 import { useState, useEffect } from 'react';
 import { obtenerPerfil } from './api/auth';
 
-const RUTAS_PRIVADAS = ['/menu', '/niveles', '/jugar/tutorial', '/ajustes'];
-const RUTAS_PUBLICAS = ['/', '/registro'];
+const RUTAS_PRIVADAS = [
+    '/menu',
+    '/niveles',
+    '/cargando',
+    '/jugar/tutorial',
+    '/ajustes'
+];const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
 
@@ -52,6 +58,7 @@ export default function App() {
       <Route path="/niveles" component={Niveles} />
       <Route path="/jugar/tutorial" component={Juego} />
       <Route path="/ajustes" component={ConfiguracionesUs} />
+      <Route path="/cargando" component={PantallaCarga} />
 
       <Route>Página no encontrada</Route>
     </Switch>

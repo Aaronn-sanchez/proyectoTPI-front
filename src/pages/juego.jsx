@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { crearConfig } from '../game/config';
 import '../App.css';
 
+
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
