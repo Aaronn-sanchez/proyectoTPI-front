@@ -3,11 +3,9 @@ import './perfil.css'
 import { cerrarSesion } from "../../api/cerrasSesion";
 import { eliminarCuenta, actualizarNombre } from "../../api/auth";
 
-const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
-
-
 export default function Perfil() {
 
+    const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
     const handleActualizarNombre = async () => {
         const nuevoNombre = window.prompt("Ingresá tu nuevo nombre de usuario:", usuario?.nombre);
 

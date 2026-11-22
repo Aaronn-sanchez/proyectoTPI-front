@@ -7,16 +7,3 @@
     padding: 0;
     box-sizing: border-box;
 }
-
-#menu-link {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: #e29828;
-    padding: 10px;
-    border-radius: 5px;
-    text-decoration: none;
-    border: 2px solid #4c41e0;
-    font-family: "Poetsen One", sans-serif;
-    font-size: 16px;
-}
