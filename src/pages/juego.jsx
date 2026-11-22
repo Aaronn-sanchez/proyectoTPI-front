@@ -4,15 +4,19 @@ import { crearConfig } from '../game/config';
 import '../App.css';
 import { useLocation } from 'wouter';
 import MenuPausa from '../componentes/menuPausa/MenuPausa';
-import { iniciarNivel } from '../api/niveles';
+import NivelCompletado from '../componentes/Nivel_Completado/NivelCompletado';
+import { iniciarNivel, completarNivel } from '../api/niveles';
 
 const ID_NIVEL = 0; // tutorial
+const NOMBRE_NIVEL = 'Tutorial básico';
 
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
     const [pausado, setPausado] = useState(false);
     const [autorizado, setAutorizado] = useState(false);
+    // null = jugando | 'guardando' | 'ok' | 'error'
+    const [fin, setFin] = useState(null);
     const [, setLocation] = useLocation();
 
     // La API valida que el nivel esté desbloqueado para este usuario
@@ -35,26 +39,45 @@ export default function Juego() {
         };
     }, [autorizado]);
 
-    // para que el juego detecte el pausado
+    // Guarda el nivel como completado en la API
+    async function guardarFin() {
+        setFin('guardando');
+        try {
+            await completarNivel(ID_NIVEL);
+            setFin('ok');
+        } catch {
+            setFin('error');
+        }
+    }
+
+    // La escena avisa con un evento cuando el carpincho toca el final del nivel
+    useEffect(() => {
+        if (!autorizado || !juego.current) return;
+        const game = juego.current;
+        game.events.on('nivel-completado', guardarFin);
+        return () => { game.events.off('nivel-completado', guardarFin); };
+    }, [autorizado]);
+
+    // para que el juego detecte el pausado (o el fin de nivel)
     useEffect(() => {
         if (!juego.current) return;
-        if (pausado) {
+        if (pausado || fin) {
             juego.current.scene.pause('tutorialBasico');
         } else {
             juego.current.scene.resume('tutorialBasico');
         }
-    }, [pausado, autorizado]);
+    }, [pausado, fin, autorizado]);
 
     useEffect(() => {
         const alApretar = (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && !fin) {
                 setPausado((p) => !p);
             }
         };
 
         window.addEventListener('keydown', alApretar);
         return () => window.removeEventListener('keydown', alApretar);
-    }, []);
+    }, [fin]);
 
     return (
         <div style={{
@@ -66,13 +89,23 @@ export default function Juego() {
             <button id="menu-link" onClick={() => setPausado(true)}>
                 Menú
             </button>
-            {pausado && (
+
+            {pausado && !fin && (
                 <MenuPausa
                     onContinuar={() => setPausado(false)}
                     onAjustes={() => { }}
                     onSalir={() => setLocation('/niveles')}
                 />
             )}
-        </div >
+
+            {fin && (
+                <NivelCompletado
+                    estado={fin}
+                    nombreNivel={NOMBRE_NIVEL}
+                    onReintentar={guardarFin}
+                    onVolver={() => setLocation('/niveles')}
+                />
+            )}
+        </div>
     );
 }

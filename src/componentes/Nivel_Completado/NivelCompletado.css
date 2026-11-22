@@ -1,0 +1,69 @@
+.nivel-completado-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+}
+
+.nivel-completado-contenido {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-width: 260px;
+    text-align: center;
+}
+
+.nivel-completado-titulo {
+    margin: 0;
+    color: #ffffff;
+    font-family: "Poetsen One", sans-serif;
+    font-size: 30px;
+}
+
+.nivel-completado-nivel {
+    margin: 0;
+    color: #275B17;
+    font-family: "Poetsen One", sans-serif;
+    font-size: 20px;
+}
+
+.nivel-completado-mensaje {
+    margin: 0;
+    color: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+}
+
+.nivel-completado-botones {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.nivel-completado-btn {
+    width: 100%;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #C4C7EA;
+    color: #ffffff;
+    font-family: "Potta One", system-ui;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.nivel-completado-btn:hover {
+    filter: brightness(0.95);
+}
+
+.nivel-completado-btn:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}

@@ -12,7 +12,7 @@ import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
 import { useState, useEffect } from 'react';
 import { obtenerPerfil } from './api/auth';
 
-const RUTAS_PRIVADAS = ['/menu', '/niveles', '/jugar/tutorial', '/ajustes'];
+const RUTAS_PRIVADAS = ['/menu', '/niveles', '/jugar/tutorial', '/ajustes', '/misLogros'];
 const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {

@@ -55,9 +55,12 @@ export default class TutorialBasico extends Scene {
     }
 
     create() {
+        this.nivelTerminado = false;   // <-- agregar
         const datosLDtk = this.cache.json.get(CLAVE_NIVEL);
+
         const nivel = datosLDtk.levels.find((l) => l.identifier === ID_NIVEL) || datosLDtk.levels[0];
         const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
+
 
         // Límites físicos del mundo en Matter
         const limites = this.calcularLimitesMundo(datosLDtk);
@@ -68,7 +71,6 @@ export default class TutorialBasico extends Scene {
         this.crearCarpincho(nivel);
         this.crearDeteccionContactos();
         this.crearCamaraYControles(limites);
-        this.botonRespawn(nivel);
 
         console.log(
             this.buscarCapa(datosLDtk.levels[2], CAPAS.ENTIDADES)
@@ -108,7 +110,27 @@ export default class TutorialBasico extends Scene {
     // HELPERS
     // =======================================================
 
-    botonRespawn() {
+    crearFinNivel(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
+
+        capaEntidades?.entityInstances
+            .filter((e) => e.__identifier === "Fin_nivel")
+            .forEach((e) => {
+
+                const x = e.px[0] + nivel.worldX + e.width * (0.5 - e.__pivot[0]);
+                const y = e.px[1] + nivel.worldY + e.height * (0.5 - e.__pivot[1]);
+
+                console.log("Fin_nivel creado en", x, y);
+
+                const zona = this.matter.add.rectangle(x, y, e.width, e.height, {
+                    isSensor: true,
+                    isStatic: true,
+                    label: "fin_nivel",
+                });
+
+                zona.tags = e.__tags || [];
+            });
+
     }
 
     activarBoton(nivel) {
@@ -249,6 +271,16 @@ export default class TutorialBasico extends Scene {
 
         console.log("Carpincho reapareció en:", x, y);
     }
+    finalizarNivel() {
+
+        console.log("finalizarNivel llamado");
+
+        if (this.nivelTerminado) return;
+        this.nivelTerminado = true;
+
+        // La escena no habla con la API: avisa y juego.jsx se encarga
+        this.game.events.emit("nivel-completado");
+    }
 
 
     crearDeteccionContactos() {
@@ -275,6 +307,8 @@ export default class TutorialBasico extends Scene {
 
 
     resolverInteraccion(bodyA, bodyB) {
+
+        console.log("contacto:", bodyA.label, bodyB.label, bodyA.tags, bodyB.tags);
 
         // Identificar el cuerpo principal si es compuesto
         const obtenerCuerpoPrincipal = (body) =>
@@ -344,6 +378,8 @@ export default class TutorialBasico extends Scene {
 
                 return;
             }
+
+
         }
 
         // Identificar al carpincho
@@ -376,6 +412,11 @@ export default class TutorialBasico extends Scene {
         // Checkpoint
         if (tags.includes("guardado")) {
             this.activarCheckpoint(objeto);
+            return;
+        }
+
+        if (tags.includes("fin_nivel")) {
+            this.finalizarNivel();
             return;
         }
     }
@@ -520,6 +561,7 @@ export default class TutorialBasico extends Scene {
             this.crearCheckpoints(nivel)
             this.activarBoton(nivel)
             this.crearPuerta(nivel)
+            this.crearFinNivel(nivel)
         });
     }
 
