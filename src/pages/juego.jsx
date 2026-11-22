@@ -4,32 +4,46 @@ import { crearConfig } from '../game/config';
 import '../App.css';
 import { useLocation } from 'wouter';
 import MenuPausa from '../componentes/menuPausa/MenuPausa';
+import { iniciarNivel } from '../api/niveles';
+
+const ID_NIVEL = 0; // tutorial
 
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
     const [pausado, setPausado] = useState(false);
+    const [autorizado, setAutorizado] = useState(false);
     const [, setLocation] = useLocation();
 
+    // La API valida que el nivel esté desbloqueado para este usuario
     useEffect(() => {
-        if (juego.current) return;
+        let cancelado = false;
+        iniciarNivel(ID_NIVEL)
+            .then(() => { if (!cancelado) setAutorizado(true); })
+            .catch(() => { if (!cancelado) setLocation('/niveles'); });
+        return () => { cancelado = true; };
+    }, []);
+
+    // El juego se crea recién cuando la API da el OK
+    useEffect(() => {
+        if (!autorizado || juego.current) return;
         juego.current = new Phaser.Game(crearConfig(contenedor.current));
 
         return () => {
             juego.current?.destroy(true);
             juego.current = null;
         };
-    }, []);
+    }, [autorizado]);
 
-    // para que el juego detecte el pausado 
+    // para que el juego detecte el pausado
     useEffect(() => {
+        if (!juego.current) return;
         if (pausado) {
             juego.current.scene.pause('tutorialBasico');
         } else {
             juego.current.scene.resume('tutorialBasico');
         }
-    }, [pausado])
-
+    }, [pausado, autorizado]);
 
     useEffect(() => {
         const alApretar = (e) => {
@@ -41,7 +55,6 @@ export default function Juego() {
         window.addEventListener('keydown', alApretar);
         return () => window.removeEventListener('keydown', alApretar);
     }, []);
-
 
     return (
         <div style={{
