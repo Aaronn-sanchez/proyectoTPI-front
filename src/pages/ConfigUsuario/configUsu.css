@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400;500;600;700&display=swap');
+
+/* ---------- Contenedor general ---------- */
+.contenedor-ajustes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    font-family: 'Radio Canada', sans-serif;
+    color: white;
+}
+
+.contenedor-ajustes h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.seccion-ajuste {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.seccion-ajuste h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* ---------- Slider de música ---------- */
+.slider-musica {
+    --oscuro: #6c6bc2;   /* parte recorrida (izquierda) */
+    --claro: #b8bde8;    /* parte que falta (derecha) */
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 18px;
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    /* el corte va al centro del círculo: 12px es la mitad de su ancho */
+    background: linear-gradient(
+        to right,
+        var(--oscuro) calc(12px + (100% - 24px) * var(--valor, 75) / 100),
+        var(--claro)  calc(12px + (100% - 24px) * var(--valor, 75) / 100)
+    );
+}
+
+.slider-musica::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #8584d0;
+    border: 2px solid #3a3fb0;
+    cursor: pointer;
+}
+
+.slider-musica::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #8584d0;
+    border: 2px solid #3a3fb0;
+    cursor: pointer;
+}
+
+/* ---------- Idioma ---------- */
+.contenedor-idiomas {
+    display: flex;
+    justify-content: center;
+    gap: 56px;
+}
+
+.btn-idioma {
+    min-width: 104px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 8px;
+    background-color: #b3b9ea;
+    color: white;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+/* ---------- Perfiles ---------- */
+.subtitulo-perfiles {
+    margin: -8px 0 0;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.fila-perfil {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-perfil,
+.input-perfil {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 2px solid #3a3fb0;
+    border-radius: 8px;
+    background-color: #8584d0;
+    color: white;
+    font-family: inherit;
+    font-size: 17px;
+    text-align: left;
+}
+
+.btn-perfil {
+    cursor: pointer;
+}
+
+.perfil-seleccionado {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+}
+
+.input-perfil::placeholder {
+    color: #c9c9ee;
+}
+
+.btn-cerrar-perfil {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 8px;
+    background-color: #e02424;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-guardar-perfil {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 8px;
+    background-color: #e0cf3f;
+    color: #f4efb8;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+}

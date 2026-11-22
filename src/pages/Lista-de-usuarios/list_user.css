@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400;500;600;700&display=swap');
+
+/* ---------- Estructura general ---------- */
+.contenedor-principal {
+    display: grid;
+    grid-template-columns: 1fr 2px 2fr;
+    gap: 24px;
+}
+
+.divisor-vertical {
+    background-color: white;
+}
+
+.contenedor-de-lista-de-usuarios,
+.contenedor-de-roles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 12px;
+    align-items: center;
+}
+
+/* ---------- Lista de usuarios ---------- */
+.tarjeta-de-usuarios{
+    background-color: #ffec59;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    border-radius: 10px;
+    padding: 9px;
+    border: 3px solid transparent; 
+        p{
+            font-family: 'Radio Canada', sans-serif;
+            font-weight: 600;
+            color: #333232;
+            font-size: 17px;
+        }
+    width: 100%; 
+}
+
+.tarjeta-seleccionada{
+    border-color: #550D84;
+}
+
+.btn-cerrar-usuario-lista{
+    background-color: red;
+    padding: 5px 10px;
+    border-radius: 100%;
+    color: white;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 14px;
+}
+.modificar{
+    background-color: darkorange;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    border-radius: 5px;
+    font-family: 'Radio Canada', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+}
+.contenedor-acciones {
+    display: flex;
+    gap: 12px;
+}
+
+/* ---------- Roles ---------- */
+.roles-contenido {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 16px;
+    align-items: start;
+    font-size: 16px;
+}
+
+.roles-columna-izquierda {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tarjeta-amarilla {
+    background-color: #ffec59;
+    border-radius: 5px;
+    padding: 14px;
+    font-family: 'Radio Canada', sans-serif;
+    color: #333232;
+        h2{
+            margin: 0 0 8px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        small{
+            display: block;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+}
+
+/* Formulario */
+.campo-nombre-rol {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+        input{
+            flex: 1;
+            min-width: 0;
+            padding: 4px 8px;
+            border: 0;
+            border-radius: 5px;
+            background-color: #d9c85a;
+        }
+}
+
+.formulario-rol-pie {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.btn-guardar-rol {
+    background-color: #550D84;
+    color: white;
+    border: 0;
+    border-radius: 5px;
+    padding: 4px 14px;
+    font-family: 'Radio Canada', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Checklist de servicios */
+.servicio-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    font-weight: 600;
+    font-size: 14px;
+        input{
+            width: 20px;
+            height: 20px;
+            accent-color: #550D84;
+        }
+}
+
+/* Lista de roles creados */
+.lista-de-roles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rol-creado {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    background-color: #ffec59;
+    border: 3px solid #550D84;
+    border-radius: 5px;
+        p{
+            margin: 0;
+            font-family: 'Radio Canada', sans-serif;
+            font-weight: 700;
+            color: #333232;
+        }
+}
+
+.btn-cerrar-rol {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: red;
+    color: white;
+    border-radius: 100%;
+    padding: 1px 6px;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 11px;
+}
+
+@media (max-width: 800px) {
+    .contenedor-principal {
+        grid-template-columns: 1fr;
+    }
+    .divisor-vertical {
+        display: none;
+    }
+    .roles-contenido {
+        grid-template-columns: 1fr;
+    }
+}
