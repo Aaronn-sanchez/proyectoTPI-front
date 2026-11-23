@@ -33,8 +33,8 @@
 
 /* ---------- Slider de música ---------- */
 .slider-musica {
-    --oscuro: #6c6bc2;   /* parte recorrida (izquierda) */
-    --claro: #b8bde8;    /* parte que falta (derecha) */
+    --oscuro: #6c6bc2;  
+    --claro: #b8bde8;    
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
@@ -42,7 +42,7 @@
     border-radius: 10px;
     outline: none;
     cursor: pointer;
-    /* el corte va al centro del círculo: 12px es la mitad de su ancho */
+
     background: linear-gradient(
         to right,
         var(--oscuro) calc(12px + (100% - 24px) * var(--valor, 75) / 100),
@@ -69,7 +69,6 @@
     cursor: pointer;
 }
 
-/* ---------- Idioma ---------- */
 .contenedor-idiomas {
     display: flex;
     justify-content: center;
@@ -89,7 +88,6 @@
     cursor: pointer;
 }
 
-/* ---------- Perfiles ---------- */
 .subtitulo-perfiles {
     margin: -8px 0 0;
     font-size: 13px;
