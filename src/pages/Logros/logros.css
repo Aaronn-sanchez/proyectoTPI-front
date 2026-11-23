@@ -8,13 +8,11 @@
     width: 100%;
     max-width: 430px;
     max-height: 340px;
-    /* alto visible antes de que aparezca el scroll */
     margin: 16px auto;
     padding-right: 6px;
     overflow-y: auto;
 }
 
-/* Scrollbar discreta */
 .contenedor-de-logros::-webkit-scrollbar {
     width: 8px;
 }
@@ -47,7 +45,6 @@
 /* Card */
 .logro {
     flex-shrink: 0;
-    /* evita que las cards se aplasten dentro del scroll */
     display: flex;
     align-items: center;
     gap: 12px;

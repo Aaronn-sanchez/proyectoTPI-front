@@ -50,9 +50,12 @@ export default function Logros() {
                             className={l.desbloqueado ? 'logro' : 'logro logro--bloqueado'}
                         >
                             <div className="logro__imagen">
-                                {l.imagen && <img src={l.imagen} alt={l.titulo} />}
+                                <img
+                                    src={`/img/logro/${l.codigo.toLowerCase()}.png`}
+                                    alt={l.titulo}
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
                             </div>
-
                             <div className="logro__info">
                                 <h3>{l.titulo}</h3>
                                 <p>{l.descripcion}</p>
@@ -76,6 +79,7 @@ export default function Logros() {
                         </div>
                     ))}
                 </main>
+
 
                 <button className="btn-volver" onClick={() => window.history.back()}>
                     ← Volver

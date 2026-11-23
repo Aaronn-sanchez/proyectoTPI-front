@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
+import { useLocation } from 'wouter';
 import { crearConfig } from '../game/config';
 import '../App.css';
-import { useLocation } from 'wouter';
 import MenuPausa from '../componentes/menuPausa/MenuPausa';
 import NivelCompletado from '../componentes/Nivel_Completado/NivelCompletado';
 import { iniciarNivel, completarNivel } from '../api/niveles';
@@ -13,24 +13,33 @@ const NOMBRE_NIVEL = 'Tutorial básico';
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
+
     const [pausado, setPausado] = useState(false);
     const [autorizado, setAutorizado] = useState(false);
-    // null = jugando | 'guardando' | 'ok' | 'error'
     const [fin, setFin] = useState(null);
     const [, setLocation] = useLocation();
 
     // La API valida que el nivel esté desbloqueado para este usuario
     useEffect(() => {
         let cancelado = false;
+
         iniciarNivel(ID_NIVEL)
-            .then(() => { if (!cancelado) setAutorizado(true); })
-            .catch(() => { if (!cancelado) setLocation('/niveles'); });
-        return () => { cancelado = true; };
-    }, []);
+            .then(() => {
+                if (!cancelado) setAutorizado(true);
+            })
+            .catch(() => {
+                if (!cancelado) setLocation('/niveles');
+            });
+
+        return () => {
+            cancelado = true;
+        };
+    }, [setLocation]);
 
     // El juego se crea recién cuando la API da el OK
     useEffect(() => {
         if (!autorizado || juego.current) return;
+
         juego.current = new Phaser.Game(crearConfig(contenedor.current));
 
         return () => {
@@ -42,6 +51,7 @@ export default function Juego() {
     // Guarda el nivel como completado en la API
     async function guardarFin() {
         setFin('guardando');
+
         try {
             await completarNivel(ID_NIVEL);
             setFin('ok');
@@ -50,17 +60,22 @@ export default function Juego() {
         }
     }
 
-    // La escena avisa con un evento cuando el carpincho toca el final del nivel
+    // La escena avisa con un evento cuando el carpincho toca el final
     useEffect(() => {
         if (!autorizado || !juego.current) return;
+
         const game = juego.current;
         game.events.on('nivel-completado', guardarFin);
-        return () => { game.events.off('nivel-completado', guardarFin); };
+
+        return () => {
+            game.events.off('nivel-completado', guardarFin);
+        };
     }, [autorizado]);
 
-    // para que el juego detecte el pausado (o el fin de nivel)
+    // Pausa o reanuda la escena de Phaser
     useEffect(() => {
         if (!juego.current) return;
+
         if (pausado || fin) {
             juego.current.scene.pause('tutorialBasico');
         } else {
@@ -68,6 +83,7 @@ export default function Juego() {
         }
     }, [pausado, fin, autorizado]);
 
+    // Escape abre y cierra el menú de pausa
     useEffect(() => {
         const alApretar = (e) => {
             if (e.key === 'Escape' && !fin) {
@@ -76,16 +92,24 @@ export default function Juego() {
         };
 
         window.addEventListener('keydown', alApretar);
-        return () => window.removeEventListener('keydown', alApretar);
+
+        return () => {
+            window.removeEventListener('keydown', alApretar);
+        };
     }, [fin]);
 
     return (
         <div style={{
-            width: '100vw', height: '100vh', backgroundColor: '#1a1a1a',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#1a1a1a',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             overflow: 'hidden'
         }}>
             <div ref={contenedor} />
+
             <button id="menu-link" onClick={() => setPausado(true)}>
                 Menú
             </button>
@@ -93,7 +117,7 @@ export default function Juego() {
             {pausado && !fin && (
                 <MenuPausa
                     onContinuar={() => setPausado(false)}
-                    onAjustes={() => { }}
+                    onAjustes={() => setLocation('/ajustes')}
                     onSalir={() => setLocation('/niveles')}
                 />
             )}
