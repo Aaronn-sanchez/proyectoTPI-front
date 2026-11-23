@@ -52,6 +52,11 @@ export default class TutorialBasico extends Scene {
         this.load.image("frame_7", url2 + "frame f2-1.png");
         this.load.image("frame_8", url2 + "frame f2-2.png");
         this.load.image("frame_9", url2 + "frame f2-3.png");
+
+        this.load.on('loaderror', (archivo) => {
+            console.error('No se pudo cargar:', archivo.key);
+            this.game.events.emit('nivel-error-carga', archivo.key);
+        });
     }
 
     create() {
@@ -81,6 +86,7 @@ export default class TutorialBasico extends Scene {
             this.input.keyboard.resetKeys();
         });
 
+        this.game.events.emit('nivel-listo');
     }
 
     update(tiempo, delta) {
