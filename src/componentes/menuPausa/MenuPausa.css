@@ -1,0 +1,48 @@
+#menu-link {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #e29828;
+    padding: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    border: 2px solid #4c41e0;
+    font-family: "Poetsen One", sans-serif;
+    font-size: 16px;
+}
+
+.pausa-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+}
+
+.pausa-contenido {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-width: 220px;
+}
+
+.pausa-contenido h2 {
+    color: #fff;
+    font-family: "Poetsen One", sans-serif;
+}
+
+.pausa-btn {
+    width: 100%;
+    padding: 10px 20px;
+    background-color: #C4C7EA;
+    color: #fff;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: "Potta One", system-ui;
+}

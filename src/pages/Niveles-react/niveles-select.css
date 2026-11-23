@@ -111,3 +111,33 @@
 .btn-jugar {
     right: 43px;
 }
+
+.nivel .nivel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.nivel.nivel-bloqueado {
+    cursor: not-allowed;
+}
+
+.nivel-bloqueado .nivel-img {
+    filter: grayscale(1) brightness(0.55);
+}
+
+.nivel-candado {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22%;
+    height: auto;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.btn-azul:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

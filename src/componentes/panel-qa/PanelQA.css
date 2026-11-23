@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400;500;600;700&display=swap');
+
+/* Cubre la pantalla y centra la caja, como el menú de pausa */
+.panel-qa-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.panel-qa {
+    position: relative;
+    width: min(440px, 80vw);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-family: 'Radio Canada', sans-serif;
+    color: white;
+}
+
+.panel-qa__titulo {
+    margin: 0;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.panel-qa__cerrar {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 6px;
+    background-color: white;
+    color: #4a63c8;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* ---------- Ajustes especiales ---------- */
+.qa-ajustes {
+    padding: 14px 20px 16px;
+    border-radius: 10px;
+    background-color: #e1e5f5;
+    color: #2a2f7a;
+}
+
+.qa-ajustes h2 {
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.qa-ajustes__sliders {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.qa-control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ---------- Slider (igual al de Ajustes, con círculo más chico) ---------- */
+.slider-qa {
+    --oscuro: #6c6bc2;   /* parte recorrida (izquierda) */
+    --claro: #b8bde8;    /* parte que falta (derecha) */
+    --punta: 16px;       /* ancho del círculo */
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 12px;
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    /* el corte va al centro del círculo */
+    background: linear-gradient(
+        to right,
+        var(--oscuro) calc(var(--punta) / 2 + (100% - var(--punta)) * var(--valor, 50) / 100),
+        var(--claro)  calc(var(--punta) / 2 + (100% - var(--punta)) * var(--valor, 50) / 100)
+    );
+}
+
+.slider-qa::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: var(--punta);
+    height: var(--punta);
+    border-radius: 50%;
+    background-color: #7776d6;
+    border: 2px solid #3a3fb0;
+    cursor: pointer;
+}
+
+.slider-qa::-moz-range-thumb {
+    width: var(--punta);
+    height: var(--punta);
+    border-radius: 50%;
+    background-color: #7776d6;
+    border: 2px solid #3a3fb0;
+    cursor: pointer;
+}
+
+.slider-qa:focus-visible {
+    outline: 2px solid #3a3fb0;
+    outline-offset: 3px;
+}
+
+/* ---------- Interruptor ON/OFF ---------- */
+.qa-interruptor {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* El checkbox real queda oculto pero accesible por teclado */
+.qa-interruptor__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.qa-interruptor__pista {
+    position: relative;
+    box-sizing: border-box;
+    width: 36px;
+    height: 20px;
+    border: 2px solid #6c6bc2;
+    border-radius: 999px;
+    background-color: #c9cdee;
+    transition: background-color 0.15s;
+}
+
+.qa-interruptor__pista::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    transition: transform 0.15s;
+}
+
+.qa-interruptor__input:checked + .qa-interruptor__pista {
+    background-color: #6c6bc2;
+}
+
+.qa-interruptor__input:checked + .qa-interruptor__pista::after {
+    transform: translateX(16px);
+}
+
+.qa-interruptor__input:focus-visible + .qa-interruptor__pista {
+    outline: 2px solid #3a3fb0;
+    outline-offset: 2px;
+}
+
+/* ---------- Checkpoints ---------- */
+.qa-checkpoints {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.qa-checkpoints h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.qa-checkpoints__subtitulo {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.qa-recorrido {
+    position: relative;
+    width: 100%;
+    height: 76px;
+    margin-top: 4px;
+}
+
+.qa-recorrido__barra {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 10px;
+    border-radius: 999px;
+    background-color: #2e8b3a;
+}
+
+.qa-bandera {
+    position: absolute;
+    bottom: 6px;
+    left: var(--x, 50%);
+    transform: translateX(-50%);
+    width: 44px;
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0 4px;
+    border: 0;
+    border-radius: 6px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.qa-bandera svg {
+    width: 28px;
+    height: 44px;
+}
+
+.qa-bandera--elegida {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.qa-bandera:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Posición de cada bandera sobre la barra (como en el diseño) */
+.qa-bandera:nth-of-type(1) { --x: 11%; }
+.qa-bandera:nth-of-type(2) { --x: 39%; }
+.qa-bandera:nth-of-type(3) { --x: 60%; }
+.qa-bandera:nth-of-type(4) { --x: 92%; }
+
+.qa-ir {
+    margin-top: 4px;
+    padding: 6px 30px;
+    border: 0;
+    border-radius: 5px;
+    background-color: #85529f;
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-abrir-qa {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    padding: 8px 18px;
+    border: 0;
+    border-radius: 5px;
+    background-color: #85529f;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}

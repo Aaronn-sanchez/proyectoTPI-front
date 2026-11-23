@@ -75,6 +75,10 @@ export default class TutorialBasico extends Scene {
                 .entityInstances.find((e) => e.__identifier === "Boton_peso")
         );
 
+        this.events.on('resume', () => {
+            this.input.keyboard.resetKeys();
+        });
+
     }
 
     update(tiempo, delta) {
@@ -98,16 +102,13 @@ export default class TutorialBasico extends Scene {
         if (this.fondoCielo) {
             this.fondoCielo.tilePositionX = cam.scrollX * 0.2;
         }
+
     }
     // =======================================================
     // HELPERS
     // =======================================================
 
     botonRespawn() {
-        const boton = this.add.image(this.width - 40, 40, 'textura_caja')
-            .setInteractive()
-            .setScrollFactor(0)
-            .setDepth(100);
     }
 
     activarBoton(nivel) {
@@ -424,9 +425,6 @@ export default class TutorialBasico extends Scene {
                 console.log("Color de la puerta:", e.__smartColor);
             });
     }
-
-
-
 
     crearPlantas(nivel) {
         const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES)

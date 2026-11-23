@@ -6,7 +6,7 @@ export default function PerfilMini() {
     const [abierto, setAbierto] = useState(false);
 
     const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
-    const esQA = usuario?.rol === 2;
+    const esQA = usuario?.roles?.includes(2);
 
     function cerrarSiEsOverlay(e) {
         if (e.target === e.currentTarget) setAbierto(false);

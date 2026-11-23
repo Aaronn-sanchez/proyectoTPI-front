@@ -1,54 +1,68 @@
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
-import { Link, useLocation } from 'wouter';
+import { useLocation } from 'wouter';
 import { crearConfig } from '../game/config';
+import MenuPausa from '../componentes/menuPausa/MenuPausa';
+import PanelQA from '../componentes/panel-qa/PanelQA.jsx';
+import { iniciarNivel } from '../api/niveles';
 import '../App.css';
 
-// Ajustá la ruta de ajustes a la que tengas definida
-const RUTA_MENU = '/menu';
+const ID_NIVEL = 0; // tutorial
+
+const RUTA_NIVELES = '/niveles';
 const RUTA_AJUSTES = '/ajustes';
-
-
 
 export default function Juego() {
     const contenedor = useRef(null);
     const juego = useRef(null);
-    const escenasPausadas = useRef([]);
-    const [, navigate] = useLocation();
     const [pausado, setPausado] = useState(false);
+    const [panelQAAbierto, setPanelQAAbierto] = useState(false);
+    const [autorizado, setAutorizado] = useState(false);
+    const [, setLocation] = useLocation();
 
+    // La API valida que el nivel esté desbloqueado para este usuario
     useEffect(() => {
-        if (juego.current) return;
+        let cancelado = false;
+        iniciarNivel(ID_NIVEL)
+            .then(() => { if (!cancelado) setAutorizado(true); })
+            .catch(() => { if (!cancelado) setLocation(RUTA_NIVELES); });
+        return () => { cancelado = true; };
+    }, []);
+
+    // El juego se crea recién cuando la API da el OK
+    useEffect(() => {
+        if (!autorizado || juego.current) return;
         juego.current = new Phaser.Game(crearConfig(contenedor.current));
 
         return () => {
             juego.current?.destroy(true);
             juego.current = null;
         };
-    }, []);
+    }, [autorizado]);
 
-    // Esc abre y cierra la pausa
+    // El juego queda congelado si el menú de pausa O el panel QA están abiertos
+    useEffect(() => {
+        if (!juego.current) return;
+        if (pausado || panelQAAbierto) {
+            juego.current.scene.pause('tutorialBasico');
+        } else {
+            juego.current.scene.resume('tutorialBasico');
+        }
+    }, [pausado, panelQAAbierto, autorizado]);
+
+    // Esc: si el panel QA está abierto lo cierra; si no, abre o cierra la pausa
     useEffect(() => {
         function alTeclear(e) {
-            if (e.key === 'Escape') setPausado((p) => !p);
+            if (e.key !== 'Escape') return;
+            if (panelQAAbierto) {
+                setPanelQAAbierto(false);
+            } else {
+                setPausado((p) => !p);
+            }
         }
         window.addEventListener('keydown', alTeclear);
         return () => window.removeEventListener('keydown', alTeclear);
-    }, []);
-
-    // Pausa o reanuda las escenas de Phaser según el estado
-    useEffect(() => {
-        const escenas = juego.current?.scene;
-        if (!escenas) return;
-
-        if (pausado) {
-            escenasPausadas.current = escenas.getScenes(true); // las que están corriendo
-            escenasPausadas.current.forEach((s) => s.scene.pause());
-        } else {
-            escenasPausadas.current.forEach((s) => s.scene.resume());
-            escenasPausadas.current = [];
-        }
-    }, [pausado]);
+    }, [panelQAAbierto]);
 
     return (
         <div style={{
@@ -57,17 +71,27 @@ export default function Juego() {
             overflow: 'hidden'
         }}>
             <div ref={contenedor} />
-            <Link href={RUTA_MENU} id="menu-link">
+
+            <button id="menu-link" onClick={() => setPausado(true)}>
                 Menú
-            </Link>
+            </button>
+
+            {/* Botón del panel: solo si no hay otra ventana abierta */}
+            {!panelQAAbierto && !pausado && (
+                <button type="button" className="btn-abrir-qa" onClick={() => setPanelQAAbierto(true)}>
+                    Panel QATester
+                </button>
+            )}
 
             {pausado && (
                 <MenuPausa
-                    onSeguir={() => setPausado(false)}
-                    onSalir={() => navigate(RUTA_MENU)}
-                    onAjustes={() => navigate(RUTA_AJUSTES)}
+                    onContinuar={() => setPausado(false)}
+                    onAjustes={() => setLocation(RUTA_AJUSTES)}
+                    onSalir={() => setLocation(RUTA_NIVELES)}
                 />
             )}
+
+            {panelQAAbierto && <PanelQA onCerrar={() => setPanelQAAbierto(false)} />}
         </div>
     );
 }
