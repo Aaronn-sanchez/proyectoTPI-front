@@ -16,7 +16,7 @@ export default function Menu() {
             <CajaMenu className="menu-caja">
                 <div className="contenido">
                     <h1>Cozzy<span>&</span>Cosso</h1>
-                    <Link href="/niveles" className="btn-menu">Jugar</Link>
+                     <Link href="/cargando" className="btn-menu">Jugar</Link>
                     <Link href='/misLogros' className="btn-menu">Mis Logros</Link>
                     <Link href='/listaUsuarios' className="btn-menu">Lista de usuarios</Link>
                     <Link href="/ajustes" className="btn-menu">Ajustes</Link>

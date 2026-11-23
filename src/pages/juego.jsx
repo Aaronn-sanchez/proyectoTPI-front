@@ -3,7 +3,8 @@ import Phaser from 'phaser';
 import { useLocation } from 'wouter';
 import { crearConfig } from '../game/config';
 import MenuPausa from '../componentes/menuPausa/MenuPausa';
-import PanelQA from '../componentes/panel-qa/PanelQA.jsx';
+import PanelQA from '../componentes/panel-qa/PanelQA';
+
 import { iniciarNivel } from '../api/niveles';
 import '../App.css';
 
