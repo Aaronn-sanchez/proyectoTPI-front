@@ -157,6 +157,8 @@ export default function Juego() {
 
             {pausado && !fin && (
                 <MenuPausa
+                    idNivel={ID_NIVEL}
+                    obtenerEstado={() => juego.current?.scene.getScene('tutorialBasico')?.capturarEstado()}
                     onContinuar={() => setPausado(false)}
                     onAjustes={() => setLocation('/ajustes')}
                     onSalir={() => setLocation('/niveles')}

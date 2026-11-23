@@ -46,3 +46,9 @@
     cursor: pointer;
     font-family: "Potta One", system-ui;
 }
+
+.pausa-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}

@@ -87,6 +87,9 @@ export default class TutorialBasico extends Scene {
         });
 
         this.game.events.emit('nivel-listo');
+
+        // this.events.on('pause', () => this.input.keyboard.disableGlobalCapture());
+        // this.events.on('resume', () => this.input.keyboard.enableGlobalCapture());
     }
 
     update(tiempo, delta) {
@@ -276,6 +279,15 @@ export default class TutorialBasico extends Scene {
         this.sound.play(SONIDOS_CONTACTO.pop.clave);
 
         console.log("Carpincho reapareció en:", x, y);
+    }
+
+    capturarEstado() {
+        if (!this.carpincho) return null;
+        return {
+            pos_x: Math.round(this.carpincho.x),
+            pos_y: Math.round(this.carpincho.y),
+            estado_objetos: { version: 1 },
+        };
     }
     finalizarNivel() {
 
