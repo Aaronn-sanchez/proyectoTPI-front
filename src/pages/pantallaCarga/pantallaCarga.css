@@ -1,13 +1,168 @@
-
 .pantalla-carga {
-    width: 100%;
-    height: 100vh;
-    background: #d8e9ce;
+    /* ---- Área donde se acomoda el texto DENTRO de la nube ---- */
+    --nube-arriba: 16%;
+    --nube-abajo: 24%;
+    --nube-izq: 12%;
+    --nube-der: 12%;
+
+    /* Cuánto se baja el suelo con el carpincho (más alto = más abajo) */
+    --suelo-bajada: 7vh;
+
+    /* Overlay a pantalla completa, por encima del juego y del menú de pausa */
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    overflow: hidden;
+    background: #AFDEEB;
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    gap: 6vh;
+    padding-top: 3vh;
+    box-sizing: border-box;
 
-    gap: 20px;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+    /* mismo valor que DURACION_FADE_MS en el JSX */
+}
+
+.pantalla-carga--saliendo {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ---------- Nube (contenedor del texto) ---------- */
+.nube {
+    position: relative;
+    z-index: 2;
+    width: min(88vw, 900px);
+    container-type: inline-size;
+}
+
+.nube-img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.nube-texto {
+    position: absolute;
+    inset: var(--nube-arriba) var(--nube-der) var(--nube-abajo) var(--nube-izq);
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    font-family: "Potta One", system-ui;
+    color: #1a1a1a;
+    line-height: 1.8;
+    text-wrap: balance;
+}
+
+.dato-corto {
+    font-size: 2.7cqw;
+}
+
+.dato-medio {
+    font-size: 2.4cqw;
+}
+
+.dato-largo {
+    font-size: 2.1cqw;
+    line-height: 1.6;
+}
+
+/* ---------- "Loading..." ---------- */
+.cargando-titulo {
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    font-family: "Poetsen One", sans-serif;
+    font-size: clamp(28px, 4vw, 48px);
+    text-align: center;
+    color: #3b3fc4;
+    text-shadow:
+        2px 2px 0 #F89E38,
+        -2px -2px 0 #F89E38,
+        2px -2px 0 #F89E38,
+        -2px 2px 0 #F89E38;
+}
+
+.cargando-titulo--error {
+    font-size: clamp(22px, 3vw, 36px);
+}
+
+.cargando-puntos span {
+    animation: parpadeo-punto 1.2s infinite both;
+}
+
+.cargando-puntos span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.cargando-puntos span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes parpadeo-punto {
+
+    0%,
+    20% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.2;
+    }
+}
+
+/* Botón del estado de error */
+.cargando-volver {
+    position: relative;
+    z-index: 2;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 5px;
+    background-color: #C4C7EA;
+    color: #ffffff;
+    font-family: "Potta One", system-ui;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.cargando-volver:hover {
+    filter: brightness(0.95);
+}
+
+.cargando-volver:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+/* ---------- Suelo con carpincho y flor ---------- */
+.suelo-carga {
+    position: absolute;
+    bottom: calc(var(--suelo-bajada) * -1);
+    left: 0;
+    width: 100%;
+    height: auto;
+    display: block;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pantalla-carga {
+        transition: none;
+    }
+
+    .cargando-puntos span {
+        animation: none;
+    }
 }

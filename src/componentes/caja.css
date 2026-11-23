@@ -23,3 +23,10 @@
     width: 600px;
     height: 450px;
 }
+
+/* Cajas para el rol QA Tester (el perfil queda con su estilo propio) */
+.caja-menu-qa:not(.color-de-perfil) {
+    background-color: #79A1CF;
+    outline-color: #82529D;
+    box-shadow: inset 0 0 0 20px #6E3F8A;
+}

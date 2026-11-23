@@ -13,12 +13,20 @@ import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
 
 import { obtenerPerfil } from './api/auth';
 
-// Todo lo que NO esté en esta lista pide sesión iniciada.
-// Una pantalla nueva queda protegida sin tocar nada.
-const RUTAS_PUBLICAS = ['/', '/login', '/registro'];
+const RUTAS_PRIVADAS = [
+  '/menu',
+  '/niveles',
+  '/jugar/tutorial',
+  '/ajustes',
+  '/misLogros',
+  '/listaUsuarios',
+  '/cargando',
+];
+
+const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
-  const [ubicacion, setLocation] = useLocation();
+  const [ubicacion] = useLocation();
   const token = localStorage.getItem('token');
 
   const esPublica = RUTAS_PUBLICAS.includes(ubicacion);

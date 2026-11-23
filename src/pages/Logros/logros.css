@@ -32,6 +32,16 @@
     scrollbar-color: #e1e3f0 rgba(255, 255, 255, 0.15);
 }
 
+/* Mensajes: cargando, error, lista vacía */
+.logros-mensaje {
+    padding: 24px 12px;
+    text-align: center;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
 /* Card */
 .logro {
     flex-shrink: 0;
@@ -47,6 +57,12 @@
 
 .logro:hover {
     border-color: #1e90ff;
+}
+
+/* Logro todavía no desbloqueado */
+.logro--bloqueado {
+    opacity: 0.6;
+    filter: grayscale(0.7);
 }
 
 .logro__imagen {
@@ -82,4 +98,63 @@
     font-size: 15px;
     font-weight: 400;
     color: #646DCF;
+}
+
+/* Barra de progreso */
+.logro__progreso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.logro__barra {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: #C9CDE6;
+    overflow: hidden;
+}
+
+.logro__barra-relleno {
+    height: 100%;
+    border-radius: 4px;
+    background: #646DCF;
+    transition: width 0.3s ease;
+}
+
+/* Desbloqueado: la barra completa cambia de color */
+.logro:not(.logro--bloqueado) .logro__barra-relleno {
+    background: #3080A2;
+}
+
+.logro__progreso small {
+    flex-shrink: 0;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #646DCF;
+}
+
+/* Botón volver */
+.btn-volver {
+    display: block;
+    margin: 0 auto;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #E7E7E9;
+    color: #646DCF;
+    font-family: "Potta One", system-ui;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-volver:hover {
+    filter: brightness(0.95);
+}
+
+.btn-volver:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
 }
