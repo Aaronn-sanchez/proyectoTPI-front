@@ -4,7 +4,7 @@ import TutorialBasico from './escenas/TutorialBasico.js';
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-export function crearConfig(contenedor) {
+export function crearConfig(contenedor, guardadoInicial = null) {
     return {
         type: Phaser.AUTO,
         width: width,
@@ -21,6 +21,12 @@ export function crearConfig(contenedor) {
             width: width,
             height: height
         },
-        scene: [TutorialBasico]
+        scene: [
+            class extends TutorialBasico {
+                constructor() {
+                    super(guardadoInicial);
+                }
+            }
+        ]
     };
 }

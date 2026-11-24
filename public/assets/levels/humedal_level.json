@@ -1492,7 +1492,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "Spawn_carpincho",
-							"__grid": [9,26],
+							"__grid": [8,25],
 							"__pivot": [0,0],
 							"__tags": ["entidad_jugable"],
 							"__tile": { "tilesetUid": 13, "x": 40, "y": 0, "w": 540, "h": 520 },
@@ -1501,10 +1501,52 @@
 							"width": 64,
 							"height": 64,
 							"defUid": 12,
-							"px": [155,425],
+							"px": [138,411],
 							"fieldInstances": [],
-							"__worldX": 155,
-							"__worldY": 1366
+							"__worldX": 138,
+							"__worldY": 1352
+						},
+						{
+							"__identifier": "Caja",
+							"__grid": [40,19],
+							"__pivot": [0.5,0.5],
+							"__tags": [ "empujables", "detectable" ],
+							"__tile": { "tilesetUid": 71, "x": 96, "y": 96, "w": 320, "h": 336 },
+							"__smartColor": "#974E11",
+							"iid": "b2459740-e4f0-11f1-a860-0dbe2d2a8a52",
+							"width": 64,
+							"height": 64,
+							"defUid": 43,
+							"px": [642,318],
+							"fieldInstances": [
+								{ "__identifier": "label", "__type": "String", "__value": "caja", "__tile": null, "defUid": 44, "realEditorValues": [] },
+								{ "__identifier": "densidad", "__type": "Float", "__value": 0.002, "__tile": null, "defUid": 45, "realEditorValues": [] },
+								{ "__identifier": "rotacion_fija", "__type": "Bool", "__value": true, "__tile": null, "defUid": 47, "realEditorValues": [] },
+								{ "__identifier": "cajita_tile", "__type": "Tile", "__value": { "tilesetUid": 71, "x": 96, "y": 96, "w": 320, "h": 336 }, "__tile": { "tilesetUid": 71, "x": 96, "y": 96, "w": 320, "h": 336 }, "defUid": 70, "realEditorValues": [] }
+							],
+							"__worldX": 642,
+							"__worldY": 1259
+						},
+						{
+							"__identifier": "Caja",
+							"__grid": [21,24],
+							"__pivot": [0.5,0.5],
+							"__tags": [ "empujables", "detectable" ],
+							"__tile": { "tilesetUid": 71, "x": 96, "y": 96, "w": 320, "h": 336 },
+							"__smartColor": "#974E11",
+							"iid": "b3714600-e4f0-11f1-a860-f1220e7c7f1f",
+							"width": 64,
+							"height": 64,
+							"defUid": 43,
+							"px": [345,389],
+							"fieldInstances": [
+								{ "__identifier": "label", "__type": "String", "__value": "caja", "__tile": null, "defUid": 44, "realEditorValues": [] },
+								{ "__identifier": "densidad", "__type": "Float", "__value": 0.002, "__tile": null, "defUid": 45, "realEditorValues": [] },
+								{ "__identifier": "rotacion_fija", "__type": "Bool", "__value": true, "__tile": null, "defUid": 47, "realEditorValues": [] },
+								{ "__identifier": "cajita_tile", "__type": "Tile", "__value": { "tilesetUid": 71, "x": 96, "y": 96, "w": 320, "h": 336 }, "__tile": { "tilesetUid": 71, "x": 96, "y": 96, "w": 320, "h": 336 }, "defUid": 70, "realEditorValues": [] }
+							],
+							"__worldX": 345,
+							"__worldY": 1330
 						}
 					]
 				},

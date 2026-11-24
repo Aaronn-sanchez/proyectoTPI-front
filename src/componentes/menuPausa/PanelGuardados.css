@@ -1,0 +1,124 @@
+.panel-guardados {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 320px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.panel-aviso {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #C4C7EA;
+    color: #111;
+    text-align: center;
+    font-size: 12px;
+}
+
+.panel-aviso strong {
+    display: block;
+    margin-bottom: 6px;
+    font-style: italic;
+}
+
+.panel-aviso p {
+    margin: 0;
+}
+
+.panel-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #3a3fb0;
+    border-radius: 20px;
+    background: #79A1CF;
+}
+
+.panel-fila {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-guardado {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #97D96B;
+    font-size: 13px;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.panel-input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: #C4C7EA;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.panel-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #111;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.panel-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+.panel-btn-borrar {
+    background: #D9363E;
+}
+
+.panel-btn-editar {
+    background: #F89E38;
+}
+
+.panel-btn-ok {
+    background: #5BE82E;
+}
+
+.panel-nuevo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #C4C7EA;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.panel-nuevo span {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.panel-mensaje {
+    margin: 0;
+    color: #fff;
+    font-size: 13px;
+    text-align: center;
+}
+
+.panel-error {
+    color: #ffd1d1;
+}
