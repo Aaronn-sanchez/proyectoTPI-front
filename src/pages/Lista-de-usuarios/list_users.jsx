@@ -107,7 +107,8 @@ export default function ListaUsers() {
 
                 </div>
 
-                <button className="btn-azul btn-atras btn-volver" onClick={() => window.history.back()}>← Atras</button>
+
+                <button className="btn-volver" onClick={() => window.history.back()}>← Atras</button>
             </CajaMenu>
         </Layout>
     );
