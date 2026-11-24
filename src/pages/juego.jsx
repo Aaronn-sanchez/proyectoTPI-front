@@ -7,6 +7,7 @@ import MenuPausa from '../componentes/menuPausa/MenuPausa';
 import NivelCompletado from '../componentes/Nivel_Completado/NivelCompletado';
 import PantallaCarga from './pantallaCarga/pantallaCarga';
 import { iniciarNivel, completarNivel } from '../api/niveles';
+import { obtenerUltimoGuardado } from '../api/checkpoint';
 
 const ID_NIVEL = 0; // tutorial
 const NOMBRE_NIVEL = 'Tutorial básico';
@@ -28,6 +29,9 @@ export default function Juego() {
     const [errorCarga, setErrorCarga] = useState(false);
     const [, setLocation] = useLocation();
 
+    const [guardadoSeleccionado, setGuardadoSeleccionado] = useState(null);
+    const [reinicio, setReinicio] = useState(0);
+
     // La API valida que el nivel esté desbloqueado para este usuario
     useEffect(() => {
         let cancelado = false;
@@ -45,49 +49,76 @@ export default function Juego() {
         };
     }, [setLocation]);
 
+
     // El juego se crea recién cuando la API da el OK
     useEffect(() => {
         if (!autorizado || juego.current) return;
 
-        juego.current = new Phaser.Game(crearConfig(contenedor.current));
+        let cancelado = false;
+        let temporizadorListo;
+        let limite;
+        let terminado = false;
+
+        async function prepararJuego() {
+            let guardado = guardadoSeleccionado;
+
+            if (!guardado) {
+                try {
+                    const respuesta = await obtenerUltimoGuardado(ID_NIVEL);
+                    guardado = respuesta.guardado;
+                    console.log('Último guardado encontrado:', guardado);
+                } catch (error) {
+                    console.error('No se pudo consultar el último guardado:', error);
+                }
+            }
+
+            if (cancelado) return;
+
+            juego.current = new Phaser.Game(
+                crearConfig(contenedor.current, guardado)
+            );
+
+            const game = juego.current;
+
+            // La escena avisa cuando terminó de cargar (o si algo falló)
+            const alTerminar = () => {
+                terminado = true;
+
+                const falta = Math.max(
+                    0,
+                    MIN_CARGA_MS - (Date.now() - inicioCarga.current)
+                );
+
+                temporizadorListo = setTimeout(() => {
+                    setListo(true);
+                }, falta);
+            };
+
+            const alFallar = () => {
+                terminado = true;
+                setErrorCarga(true);
+            };
+
+            limite = setTimeout(() => {
+                if (!terminado) setErrorCarga(true);
+            }, TIMEOUT_CARGA_MS);
+
+            game.events.on('nivel-listo', alTerminar);
+            game.events.on('nivel-error-carga', alFallar);
+        }
+
+        prepararJuego();
 
         return () => {
+            cancelado = true;
+
+            clearTimeout(limite);
+            clearTimeout(temporizadorListo);
+
             juego.current?.destroy(true);
             juego.current = null;
         };
-    }, [autorizado]);
-
-    // La escena avisa cuando terminó de cargar (o si algo falló)
-    useEffect(() => {
-        if (!autorizado || !juego.current) return;
-
-        const game = juego.current;
-        let terminado = false;
-        let temporizadorListo;
-
-        const alTerminar = () => {
-            terminado = true;
-            const falta = Math.max(0, MIN_CARGA_MS - (Date.now() - inicioCarga.current));
-            temporizadorListo = setTimeout(() => setListo(true), falta);
-        };
-        const alFallar = () => {
-            terminado = true;
-            setErrorCarga(true);
-        };
-        const limite = setTimeout(() => {
-            if (!terminado) setErrorCarga(true);
-        }, TIMEOUT_CARGA_MS);
-
-        game.events.on('nivel-listo', alTerminar);
-        game.events.on('nivel-error-carga', alFallar);
-
-        return () => {
-            game.events.off('nivel-listo', alTerminar);
-            game.events.off('nivel-error-carga', alFallar);
-            clearTimeout(limite);
-            clearTimeout(temporizadorListo);
-        };
-    }, [autorizado]);
+    }, [autorizado, reinicio, guardadoSeleccionado]);
 
     // Guarda el nivel como completado en la API
     async function guardarFin() {
@@ -139,6 +170,22 @@ export default function Juego() {
         };
     }, [fin, listo]);
 
+    function cargarGuardado(guardado) {
+        const confirmar = window.confirm(
+            '¿Estás seguro de que quieres cargar esta partida?\n\nSe perderá el progreso que no hayas guardado.'
+        );
+
+        if (!confirmar) return;
+
+        setGuardadoSeleccionado(guardado);
+        setPausado(false);
+        setListo(false);
+        setErrorCarga(false);
+        inicioCarga.current = Date.now();
+
+        setReinicio((actual) => actual + 1);
+    }
+
     return (
         <div style={{
             width: '100vw',
@@ -159,6 +206,7 @@ export default function Juego() {
                 <MenuPausa
                     idNivel={ID_NIVEL}
                     obtenerEstado={() => juego.current?.scene.getScene('tutorialBasico')?.capturarEstado()}
+                    onSeleccionar={cargarGuardado}
                     onContinuar={() => setPausado(false)}
                     onAjustes={() => setLocation('/ajustes')}
                     onSalir={() => setLocation('/niveles')}

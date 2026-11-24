@@ -3,7 +3,7 @@ import CajaMenu from '../Caja';
 import PanelGuardados from './PanelGuardados';
 import './MenuPausa.css';
 
-export default function MenuPausa({ idNivel, obtenerEstado, onContinuar, onAjustes, onSalir }) {
+export default function MenuPausa({ idNivel, obtenerEstado, onContinuar, onAjustes, onSalir, onSeleccionar }) {
     const [panelAbierto, setPanelAbierto] = useState(false);
 
     return (
@@ -21,9 +21,11 @@ export default function MenuPausa({ idNivel, obtenerEstado, onContinuar, onAjust
                     </div>
                 </CajaMenu>
 
-                {panelAbierto && (
-                    <PanelGuardados idNivel={idNivel} obtenerEstado={obtenerEstado} />
-                )}
+                <PanelGuardados
+                    idNivel={idNivel}
+                    obtenerEstado={obtenerEstado}
+                    onSeleccionar={onSeleccionar}
+                />
             </div>
         </div>
     );

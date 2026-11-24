@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import { listarGuardados, crearGuardado, reescribirGuardado, borrarGuardado, } from '../../api/checkpoint';
+import { listarGuardados, crearGuardado, reescribirGuardado, borrarGuardado, obtenerGuardado } from '../../api/checkpoint';
 import './PanelGuardados.css';
 
-export default function PanelGuardados({ idNivel, obtenerEstado }) {
+export default function PanelGuardados({
+    idNivel,
+    obtenerEstado,
+    onSeleccionar }) {
+
     const [datos, setDatos] = useState({ guardados: [], max: 5, disponibles: 5 });
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
@@ -74,6 +78,15 @@ export default function PanelGuardados({ idNivel, obtenerEstado }) {
         }
     }
 
+    async function seleccionarGuardado(g) {
+        try {
+            const guardadoCompleto = await obtenerGuardado(g.id_checkpoint);
+            onSeleccionar(guardadoCompleto);
+        } catch (error) {
+            setError('No se pudo cargar el guardado');
+        }
+    }
+
     return (
         <aside className="panel-guardados">
             <div className="panel-aviso">
@@ -86,7 +99,15 @@ export default function PanelGuardados({ idNivel, obtenerEstado }) {
 
                 {datos.guardados.map((g) => (
                     <div className="panel-fila" key={g.id_checkpoint}>
-                        <div className="panel-guardado">{g.nombre}</div>
+
+                        <button
+                            type="button"
+                            className="panel-guardado"
+                            onClick={() => seleccionarGuardado(g)}
+                        >
+                            {g.nombre}
+                        </button>
+
                         <button type="button" className="panel-btn panel-btn-borrar"
                             aria-label={`Borrar ${g.nombre}`} onClick={() => borrar(g)}>🗑</button>
                         <button type="button" className="panel-btn panel-btn-editar"
