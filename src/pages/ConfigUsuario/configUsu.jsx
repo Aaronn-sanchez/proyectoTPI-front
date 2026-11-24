@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './configUsu.css';
+import '../../componentes/btn-volver.css';
 import Layout from '../../componentes/Layout';
 import Caja from '../../componentes/Caja';
 import {
@@ -168,7 +169,7 @@ export default function ConfigUsuario() {
                         )}
                     </section>
 
-                    <button className="btn-azul btn-atras" onClick={() => window.history.back()}>← Atras</button>
+                    <button className="btn-azul btn-atras btn-volver" onClick={() => window.history.back()}>← Atras</button>
                 </main>
             </Caja>
         </Layout>
