@@ -33,7 +33,7 @@ export default function Juego() {
     const [reinicio, setReinicio] = useState(0);
 
     // La API valida que el nivel esté desbloqueado para este usuario
-    useEffect(() => {
+    useEffect(() => { 
         let cancelado = false;
 
         iniciarNivel(ID_NIVEL)
