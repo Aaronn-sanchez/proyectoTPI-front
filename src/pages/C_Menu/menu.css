@@ -1,3 +1,14 @@
+h1 {
+    color: #ffffff;
+    margin-bottom: 20px;
+    font-family: "Poetsen One", sans-serif;
+}
+
+h1 span {
+    color: #275B17;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
 .menu-titulo {
     color: #ffffff;
     margin-bottom: 20px;
