@@ -31,7 +31,6 @@
     font-weight: 700;
 }
 
-/* ---------- Slider de música ---------- */
 .slider-musica {
     --oscuro: #6c6bc2;  
     --claro: #b8bde8;    
@@ -148,4 +147,19 @@
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
+}
+.ajustes-error {
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: #e02424;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.btn-idioma--activo {
+    background-color: #8584d0;
+    box-shadow: 0 0 0 2px white;
 }
