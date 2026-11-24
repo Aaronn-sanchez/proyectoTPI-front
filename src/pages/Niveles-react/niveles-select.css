@@ -12,20 +12,26 @@
     box-sizing: border-box;
 }
 
-.niveles-titulo {
+.niveles-container .niveles-titulo {
     font-size: 1.32rem;
     margin: 0;
 }
 
+.niveles-container .niveles-error {
+    margin: 0;
+    color: #fff;
+    text-align: center;
+}
+
 /* Escenario base 1044x595; los niveles se posicionan en % */
-.mapa {
+.niveles-container .mapa {
     position: relative;
     width: min(100%, 1044px, calc(80vh * 1044 / 595));
     aspect-ratio: 1044 / 595;
 }
 
 /* Rastros entre niveles */
-.rastros {
+.niveles-container .rastros {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -33,65 +39,90 @@
     pointer-events: none;
 }
 
-.rastro {
+.niveles-container .rastro {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
-.rastro-amarillo {
+.niveles-container .rastro-amarillo {
     stroke: #e8b92f;
     stroke-width: 8;
 }
 
-.rastro-punteado {
+.niveles-container .rastro-punteado {
     stroke: #fff;
     stroke-width: 8;
     stroke-dasharray: 1 17;
 }
 
 /* Cada imagen mide ~200px sobre el escenario de 1044px (19.2%) */
-.nivel {
+.niveles-container .nivel {
     position: absolute;
     width: 19.2%;
     aspect-ratio: 1 / 1;
     object-fit: contain;
 }
 
-.nivel-basico {
+.niveles-container .nivel-basico {
     left: 2.4%;
     top: 10%;
 }
 
-.nivel-2 {
+.niveles-container .nivel-2 {
     left: 20.1%;
     top: 56%;
 }
 
-.nivel-3 {
+.niveles-container .nivel-3 {
     left: 39.3%;
     top: 10%;
 }
 
-.nivel-4 {
+.niveles-container .nivel-4 {
     left: 57.5%;
     top: 56%;
 }
 
-.nivel-5 {
+.niveles-container .nivel-5 {
     left: 77.1%;
     top: 10%;
 }
 
-.nivel-5,
-.nivel-4,
-.nivel-3,
-.nivel-2,
-.nivel-basico {
+.niveles-container .nivel-5,
+.niveles-container .nivel-4,
+.niveles-container .nivel-3,
+.niveles-container .nivel-2,
+.niveles-container .nivel-basico {
     cursor: pointer;
 }
 
-.btn-azul {
+.niveles-container .nivel .nivel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.niveles-container .nivel.nivel-bloqueado {
+    cursor: not-allowed;
+}
+
+.niveles-container .nivel-bloqueado .nivel-img {
+    filter: grayscale(1) brightness(0.55);
+}
+
+.niveles-container .nivel-candado {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22%;
+    height: auto;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.niveles-container .niveles-boton {
     position: absolute;
     bottom: 29px;
     background: #2b3fb0;
@@ -104,40 +135,15 @@
     cursor: pointer;
 }
 
-.btn-atras {
+.niveles-container .niveles-boton--atras {
     left: 43px;
 }
 
-.btn-jugar {
+.niveles-container .niveles-boton--jugar {
     right: 43px;
 }
 
-.nivel .nivel-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-}
-
-.nivel.nivel-bloqueado {
-    cursor: not-allowed;
-}
-
-.nivel-bloqueado .nivel-img {
-    filter: grayscale(1) brightness(0.55);
-}
-
-.nivel-candado {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 22%;
-    height: auto;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-}
-
-.btn-azul:disabled {
+.niveles-container .niveles-boton:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }

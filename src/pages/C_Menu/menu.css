@@ -1,10 +1,10 @@
-h1 {
+.menu-titulo {
     color: #ffffff;
     margin-bottom: 20px;
     font-family: "Poetsen One", sans-serif;
 }
 
-h1 span {
+.menu-titulo__marca {
     color: #275B17;
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
@@ -34,6 +34,5 @@ h1 span {
     justify-content: center;
     position: relative;
     gap: 20px;
-
     margin: 0px 25px 0px 25px;
 }

@@ -38,7 +38,7 @@ export default function Niveles() {
     return (
         <div className="niveles-container">
             <h1 className="niveles-titulo">Mapa de niveles</h1>
-            {error && <p>{error}</p>}
+            {error && <p className="niveles-error" role="alert">{error}</p>}
 
             <div className="mapa">
                 <svg className="rastros" viewBox="0 0 1044 595" preserveAspectRatio="none" aria-hidden="true">
@@ -71,9 +71,9 @@ export default function Niveles() {
                 })}
             </div>
 
-            <button className="btn-azul btn-atras" onClick={() => navigate('/menu')}>← Atras</button>
+            <button className="niveles-boton niveles-boton--atras" onClick={() => navigate('/menu')}>← Atras</button>
             <button
-                className="btn-azul btn-jugar"
+                className="niveles-boton niveles-boton--jugar"
                 disabled={!rutaJugar}
                 onClick={() => navigate(rutaJugar)}
             >

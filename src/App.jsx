@@ -13,20 +13,10 @@ import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
 
 import { obtenerPerfil } from './api/auth';
 
-const RUTAS_PRIVADAS = [
-  '/menu',
-  '/niveles',
-  '/jugar/tutorial',
-  '/ajustes',
-  '/misLogros',
-  '/listaUsuarios',
-  '/cargando',
-];
-
 const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
-  const [ubicacion] = useLocation();
+  const [ubicacion, setLocation] = useLocation();
   const token = localStorage.getItem('token');
 
   const esPublica = RUTAS_PUBLICAS.includes(ubicacion);
