@@ -132,10 +132,6 @@ export default class TutorialBasico extends Scene {
     // =======================================================
 
     aplicarEstadoObjetos() {
-        console.log("APLICANDO ESTADO DE OBJETOS");
-        console.log("GUARDADO INICIAL:", this.guardadoInicial);
-        console.log("ESTADO RECIBIDO:", this.guardadoInicial?.estado_objetos);
-
         const estado = this.guardadoInicial?.estado_objetos;
 
         if (!estado) {
@@ -376,13 +372,6 @@ export default class TutorialBasico extends Scene {
 
     capturarEstado() {
         if (!this.carpincho) return null;
-
-        console.log("POSICIONES AL GUARDAR:", this.cajas.map((caja) => ({
-            iid: caja.iid,
-            x: caja.position.x,
-            y: caja.position.y
-        })));
-
         return {
             pos_x: Math.round(this.carpincho.x),
             pos_y: Math.round(this.carpincho.y),
@@ -410,7 +399,6 @@ export default class TutorialBasico extends Scene {
     }
 
     finalizarNivel() {
-        console.log("finalizarNivel llamado");
         if (this.nivelTerminado) return;
 
         this.nivelTerminado = true;
