@@ -33,7 +33,7 @@ export default function Juego() {
     const [reinicio, setReinicio] = useState(0);
 
     // La API valida que el nivel esté desbloqueado para este usuario
-    useEffect(() => { 
+    useEffect(() => {
         let cancelado = false;
 
         iniciarNivel(ID_NIVEL)
@@ -105,6 +105,7 @@ export default function Juego() {
 
             game.events.on('nivel-listo', alTerminar);
             game.events.on('nivel-error-carga', alFallar);
+            game.events.on('nivel-completado', guardarFin);
         }
 
         prepararJuego();
@@ -131,18 +132,6 @@ export default function Juego() {
             setFin('error');
         }
     }
-
-    // La escena avisa con un evento cuando el carpincho toca el final
-    useEffect(() => {
-        if (!autorizado || !juego.current) return;
-
-        const game = juego.current;
-        game.events.on('nivel-completado', guardarFin);
-
-        return () => {
-            game.events.off('nivel-completado', guardarFin);
-        };
-    }, [autorizado]);
 
     // Pausa o reanuda la escena de Phaser
     useEffect(() => {

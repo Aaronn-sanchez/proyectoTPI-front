@@ -410,6 +410,7 @@ export default class TutorialBasico extends Scene {
     }
 
     finalizarNivel() {
+        console.log("finalizarNivel llamado");
         if (this.nivelTerminado) return;
 
         this.nivelTerminado = true;
