@@ -4,6 +4,11 @@ export async function listarUsuarios() {
     const respuesta = await api.get('/api/usuarios');
     return respuesta.data;
 }
+export async function renombrarUsuario(idUsuario, nombre) {
+    const respuesta = await api.patch(`/api/usuarios/${idUsuario}`, { nombre });
+    return respuesta.data;
+}
+
 
 export async function listarRolesDeUsuario(idUsuario) {
     const respuesta = await api.get(`/api/usuarios/${idUsuario}/roles`);
