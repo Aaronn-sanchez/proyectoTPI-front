@@ -1,80 +1,151 @@
+
 .contenido-de-perfil {
     font-family: 'Potta One', serif;
     color: #4A2E16;
 
-    h2 {
-        text-align: center;
-    }
-
-
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .contenido-de-perfil h2 {
+    text-align: center;
     color: #4A2E16;
-    margin-bottom: 12px;
+
+    margin: 0 0 12px;
+    font-size: 26px;
 }
 
 .color-de-perfil {
     background-color: #F3E5D0 !important;
+
     border: 6px solid #D99B66 !important;
     outline: 6px solid #6E4726 !important;
+
     box-shadow: 0 0 0 4px #3B4D54 !important;
+
+    width: min(560px, calc(100vw - 40px));
+    max-width: 100%;
+
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+
+    box-sizing: border-box;
 }
 
 .datos-usuario {
     margin: 20px 0;
     padding: 14px 18px;
+
     background-color: #E4D1B5;
+
     border: 2px solid #C2A682;
     border-radius: 10px;
 
-    span {
-        color: #4A2E16;
-    }
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
 }
 
-
 .datos-usuario h3 {
+    display: flex;
+    align-items: center;
+
     font-size: 20px;
     color: #4A2E16;
-    margin-bottom: 8px;
+
+    margin: 0 0 8px;
+}
+
+.datos-usuario span {
+    color: #4A2E16;
 }
 
 .datos-usuario p {
     color: #2E3B3E;
+
     margin: 4px 0;
     font-size: 15px;
+
+    overflow-wrap: anywhere;
 }
+
+/* =================================
+   BOTÓN EDITAR
+   ================================= */
+
+.boton-editar-sutil {
+    background: none;
+    border: none;
+
+    cursor: pointer;
+
+    margin-left: 8px;
+    font-size: 24px;
+
+    transition: transform 0.2s;
+}
+
+.boton-editar-sutil:hover {
+    transform: scale(1.2);
+}
+
+/* =================================
+   PRIVILEGIOS
+   ================================= */
 
 .roles-asignados {
     margin: 20px 0;
+    margin-bottom: 20px;
+
     padding: 14px 18px;
+
     background-color: #E4D1B5;
+
     border: 2px solid #C2A682;
     border-radius: 10px;
 
-
-    margin-bottom: 20px;
+    box-sizing: border-box;
 }
 
 .roles-asignados h3 {
     font-size: 18px;
     color: #4A2E16;
+
+    margin: 0;
+}
+
+/* =================================
+   BOTONES DE ACCIONES
+   ================================= */
+
+.acciones-perfil {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
 }
 
 .cerrar-sesion {
     display: block;
-    margin: 20px auto 0 auto;
+
+    margin: 0 auto;
     padding: 10px 18px;
+
     background-color: #D96B66;
     color: #FFFDF9;
+
     border: none;
     border-bottom: 3px solid #A84A46;
     border-radius: 8px;
+
     font-size: 16px;
     cursor: pointer;
+
     font-family: "Poetsen One", sans-serif;
+
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+
     transition: background-color 0.2s, transform 0.2s;
 }
 
@@ -88,18 +159,25 @@
     border-bottom-width: 1px;
 }
 
-/* para cerrar la cuenta */
+/* Eliminar cuenta */
+
 .eliminar-cuenta {
     display: block;
-    margin: 12px auto 0 auto;
+
+    margin: 0 auto;
     padding: 10px 18px;
+
     background-color: transparent;
     color: #D96B66;
+
     border: 2px solid #D96B66;
     border-radius: 8px;
+
     font-size: 14px;
     cursor: pointer;
+
     font-family: "Poetsen One", sans-serif;
+
     transition: background-color 0.2s, color 0.2s, transform 0.2s;
 }
 
@@ -113,15 +191,147 @@
     transform: translateY(0);
 }
 
-.boton-editar-sutil {
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-left: 8px;
-    font-size: 24px;
-    transition: transform 0.2s;
+
+@media screen and (max-width: 1024px) {
+
+    .color-de-perfil {
+        width: min(520px, calc(100vw - 40px));
+        padding: 28px;
+    }
+
+    .contenido-de-perfil h2 {
+        font-size: 23px;
+    }
+
+    .datos-usuario {
+        margin: 14px 0;
+        padding: 12px 14px;
+    }
+
+    .datos-usuario h3 {
+        font-size: 18px;
+    }
+
+    .datos-usuario p {
+        font-size: 14px;
+    }
+
+    .roles-asignados {
+        margin: 14px 0;
+        padding: 12px 14px;
+    }
+
+    .roles-asignados h3 {
+        font-size: 16px;
+    }
 }
 
-.boton-editar-sutil:hover {
-    transform: scale(1.2);
+/* =================================
+   CELULARES
+   ================================= */
+
+@media screen and (max-width: 600px) {
+
+    .color-de-perfil {
+        width: min(480px, calc(100dvh - 30px));
+        max-height: calc(100vw - 30px);
+
+        padding: 20px;
+        border-width: 4px !important;
+        outline-width: 4px !important;
+    }
+
+    .contenido-de-perfil h2 {
+        font-size: 19px;
+        margin-bottom: 8px;
+    }
+
+    .datos-usuario {
+        margin: 10px 0;
+        padding: 9px 11px;
+        border-radius: 7px;
+    }
+
+    .datos-usuario h3 {
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+
+    .datos-usuario p {
+        font-size: 12px;
+        margin: 3px 0;
+    }
+
+    .boton-editar-sutil {
+        font-size: 18px;
+    }
+
+    .roles-asignados {
+        margin: 10px 0;
+        padding: 9px 11px;
+        border-radius: 7px;
+    }
+
+    .roles-asignados h3 {
+        font-size: 14px;
+    }
+
+    .acciones-perfil {
+        gap: 8px;
+    }
+
+    .cerrar-sesion {
+        padding: 7px 13px;
+        font-size: 13px;
+    }
+
+    .eliminar-cuenta {
+        padding: 7px 13px;
+        font-size: 12px;
+    }
+}
+
+/* =================================
+   DISPOSITIVOS CON POCA ALTURA
+   ================================= */
+
+@media screen and (max-height: 450px) {
+
+    .color-de-perfil {
+        max-height: calc(100vw - 20px);
+        padding: 16px;
+    }
+
+    .contenido-de-perfil h2 {
+        font-size: 17px;
+        margin-bottom: 5px;
+    }
+
+    .datos-usuario,
+    .roles-asignados {
+        margin: 7px 0;
+        padding: 7px 10px;
+    }
+
+    .datos-usuario h3 {
+        font-size: 14px;
+    }
+
+    .datos-usuario p {
+        font-size: 11px;
+    }
+
+    .roles-asignados h3 {
+        font-size: 13px;
+    }
+
+    .cerrar-sesion,
+    .eliminar-cuenta {
+        padding: 5px 11px;
+        font-size: 11px;
+    }
+
+    .acciones-perfil {
+        gap: 6px;
+    }
 }

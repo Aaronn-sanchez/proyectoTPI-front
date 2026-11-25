@@ -1,36 +1,83 @@
+
+:root {
+    --niveles-ancho: 100vw;
+    --niveles-alto: 100dvh;
+}
+
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+    :root {
+        --niveles-ancho: 100dvh;
+        --niveles-alto: 100vw;
+    }
+}
+
 .niveles-container {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: var(--niveles-ancho);
+    height: var(--niveles-alto);
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+
     background: #100D0A;
     color: #fff;
+
     gap: 10px;
-    padding: 16px;
+    padding: 55px 80px 65px;
+
     box-sizing: border-box;
+    overflow: hidden;
+}
+
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+    .niveles-container {
+        top: 0;
+        left: 100vw;
+
+        transform: rotate(90deg);
+        transform-origin: top left;
+    }
 }
 
 .niveles-container .niveles-titulo {
+    flex-shrink: 0;
     font-size: 1.32rem;
     margin: 0;
-}
+    text-align: center;
+    font-family: "Potta One", system-ui;
+    color: white;}
+
 
 .niveles-container .niveles-error {
+    flex-shrink: 0;
     margin: 0;
     color: #fff;
     text-align: center;
 }
 
-/* Escenario base 1044x595; los niveles se posicionan en % */
+/* ---------- Mapa de niveles ---------- */
+
+/* Escenario original: 1044 x 595 */
 .niveles-container .mapa {
     position: relative;
-    width: min(100%, 1044px, calc(80vh * 1044 / 595));
+
+    width: min(
+        100%,
+        1044px,
+        calc(var(--niveles-alto) * 0.8 * 1044 / 595)
+    );
+
     aspect-ratio: 1044 / 595;
+
+    flex-shrink: 1;
+    min-width: 0;
 }
 
-/* Rastros entre niveles */
 .niveles-container .rastros {
     position: absolute;
     inset: 0;
@@ -56,7 +103,8 @@
     stroke-dasharray: 1 17;
 }
 
-/* Cada imagen mide ~200px sobre el escenario de 1044px (19.2%) */
+/* ---------- Imágenes de niveles ---------- */
+
 .niveles-container .nivel {
     position: absolute;
     width: 19.2%;
@@ -89,6 +137,8 @@
     top: 10%;
 }
 
+/* Niveles disponibles */
+
 .niveles-container .nivel-5,
 .niveles-container .nivel-4,
 .niveles-container .nivel-3,
@@ -104,6 +154,8 @@
     display: block;
 }
 
+/* Niveles bloqueados */
+
 .niveles-container .nivel.nivel-bloqueado {
     cursor: not-allowed;
 }
@@ -111,6 +163,8 @@
 .niveles-container .nivel-bloqueado .nivel-img {
     filter: grayscale(1) brightness(0.55);
 }
+
+/* Candado */
 
 .niveles-container .nivel-candado {
     position: absolute;
@@ -122,17 +176,29 @@
     pointer-events: none;
 }
 
+/* ---------- Botones ---------- */
+
 .niveles-container .niveles-boton {
     position: absolute;
-    bottom: 29px;
+    bottom: 20px;
+
     background: #2b3fb0;
     color: #fff;
+
     border: 1px solid #e0a24a;
     border-radius: 4px;
+
     padding: 6px 19px;
     font-size: 19px;
     font-weight: 700;
+
     cursor: pointer;
+    transition: filter 0.2s, transform 0.2s;
+}
+
+.niveles-container .niveles-boton:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: scale(1.04);
 }
 
 .niveles-container .niveles-boton--atras {
@@ -146,4 +212,86 @@
 .niveles-container .niveles-boton:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* ---------- Tablets ---------- */
+
+@media screen and (max-width: 1024px) {
+    .niveles-container {
+        gap: 8px;
+        padding: 48px 65px 60px;
+    }
+
+    .niveles-container .niveles-titulo {
+        font-size: 1.2rem;
+    }
+
+    .niveles-container .niveles-boton {
+        bottom: 15px;
+        padding: 6px 15px;
+        font-size: 16px;
+    }
+
+    .niveles-container .niveles-boton--atras {
+        left: 20px;
+    }
+
+    .niveles-container .niveles-boton--jugar {
+        right: 20px;
+    }
+}
+
+/* ---------- Celulares ---------- */
+
+@media screen and (max-width: 600px) {
+    .niveles-container {
+        gap: 6px;
+        padding: 42px 55px 52px;
+    }
+
+    .niveles-container .niveles-titulo {
+        font-size: 1rem;
+    }
+
+    .niveles-container .niveles-error {
+        font-size: 12px;
+    }
+
+    .niveles-container .rastro-amarillo,
+    .niveles-container .rastro-punteado {
+        stroke-width: 6;
+    }
+
+    .niveles-container .niveles-boton {
+        bottom: 10px;
+        padding: 5px 11px;
+        font-size: 13px;
+    }
+
+    .niveles-container .niveles-boton--atras {
+        left: 12px;
+    }
+
+    .niveles-container .niveles-boton--jugar {
+        right: 12px;
+    }
+}
+
+/* ---------- Pantallas con poca altura ---------- */
+
+@media screen and (max-height: 450px) {
+    .niveles-container {
+        gap: 5px;
+        padding: 35px 60px 45px;
+    }
+
+    .niveles-container .niveles-titulo {
+        font-size: 17px;
+    }
+
+    .niveles-container .niveles-boton {
+        bottom: 8px;
+        padding: 4px 10px;
+        font-size: 12px;
+    }
 }

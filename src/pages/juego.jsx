@@ -7,6 +7,7 @@ import NivelCompletado from '../componentes/Nivel_Completado/NivelCompletado';
 import PantallaCarga from './pantallaCarga/pantallaCarga';
 import { iniciarNivel, completarNivel } from '../api/niveles';
 import { obtenerUltimoGuardado } from '../api/checkpoint';
+import './juego.css';
 
 const ID_NIVEL = 0; // tutorial
 const NOMBRE_NIVEL = 'Tutorial básico';
@@ -186,47 +187,51 @@ export default function Juego() {
         setReinicio((actual) => actual + 1);
     }
 
-    return (
-        <div style={{
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: '#1a1a1a',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden'
-        }}>
-            <div ref={contenedor} />
+    
+return (
+    <div className="juego-pantalla">
+        <div
+            ref={contenedor}
+            className="juego-contenedor"
+        />
 
-            <button id="menu-link" onClick={() => setPausado(true)}>
-                Menú
-            </button>
+        <button
+            id="menu-link"
+            onClick={() => setPausado(true)}
+        >
+            Menú
+        </button>
 
-            {pausado && !fin && (
-                <MenuPausa
-                    idNivel={ID_NIVEL}
-                    obtenerEstado={() => juego.current?.scene.getScene('tutorialBasico')?.capturarEstado()}
-                    onSeleccionar={cargarGuardado}
-                    onContinuar={() => setPausado(false)}
-                    onAjustes={() => setLocation('/ajustes')}
-                    onSalir={() => setLocation('/niveles')}
-                />
-            )}
+        {pausado && !fin && (
+            <MenuPausa
+                idNivel={ID_NIVEL}
+                obtenerEstado={() =>
+                    juego.current
+                        ?.scene.getScene('tutorialBasico')
+                        ?.capturarEstado()
+                }
+                onSeleccionar={cargarGuardado}
+                onContinuar={() => setPausado(false)}
+                onAjustes={() => setLocation('/ajustes')}
+                onSalir={() => setLocation('/niveles')}
+            />
+        )}
 
-            {fin && (
-                <NivelCompletado
-                    estado={fin}
-                    nombreNivel={NOMBRE_NIVEL}
-                    onReintentar={guardarFin}
-                    onVolver={() => setLocation('/niveles')}
-                />
-            )}
-
-            <PantallaCarga
-                visible={!listo}
-                error={errorCarga}
+        {fin && (
+            <NivelCompletado
+                estado={fin}
+                nombreNivel={NOMBRE_NIVEL}
+                onReintentar={guardarFin}
                 onVolver={() => setLocation('/niveles')}
             />
-        </div>
-    );
+        )}
+
+        <PantallaCarga
+            visible={!listo}
+            error={errorCarga}
+            onVolver={() => setLocation('/niveles')}
+        />
+    </div>
+);
+
 }

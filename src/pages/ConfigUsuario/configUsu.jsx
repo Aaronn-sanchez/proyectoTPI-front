@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import './configUsu.css';
 import '../../componentes/btn-volver.css';
@@ -12,7 +13,6 @@ import {
 } from '../../api/configuracion';
 
 export default function ConfigUsuario() {
-
     const [volumen, setVolumen] = useState(100);
     const [idioma, setIdioma] = useState(0);
     const [perfiles, setPerfiles] = useState([]);
@@ -51,17 +51,18 @@ export default function ConfigUsuario() {
     }
 
     function elegirPerfil(perfil) {
-        // Tocar el que ya está elegido solo esconde la X
         if (perfilSeleccionado === perfil.id_perfil) {
             setPerfilSeleccionado(null);
             return;
         }
+
         setPerfilSeleccionado(perfil.id_perfil);
         ejecutar(() => aplicarPerfil(perfil.id_perfil));
     }
 
     async function anadirPerfil(e) {
         e.preventDefault();
+
         const nombre = nuevoNombre.trim();
         if (!nombre) return;
 
@@ -80,14 +81,17 @@ export default function ConfigUsuario() {
 
     return (
         <Layout>
-            <Caja>
+            <Caja className="caja-ajustes">
                 <main className="contenedor-ajustes">
                     <h1>Ajustes</h1>
 
-                    {error && <p className="ajustes-error">{error}</p>}
+                    {error && (
+                        <p className="ajustes-error">{error}</p>
+                    )}
 
                     <section className="seccion-ajuste">
-                        <h2>Musica</h2>
+                        <h2>Música</h2>
+
                         <input
                             type="range"
                             className="slider-musica"
@@ -103,7 +107,8 @@ export default function ConfigUsuario() {
                     </section>
 
                     <section className="seccion-ajuste">
-                        <h2>Idioma/Language</h2>
+                        <h2>Idioma / Language</h2>
+
                         <div className="contenedor-idiomas">
                             <button
                                 type="button"
@@ -112,6 +117,7 @@ export default function ConfigUsuario() {
                             >
                                 Español
                             </button>
+
                             <button
                                 type="button"
                                 className={`btn-idioma ${idioma === 1 ? 'btn-idioma--activo' : ''}`}
@@ -124,7 +130,10 @@ export default function ConfigUsuario() {
 
                     <section className="seccion-ajuste">
                         <h2>Mis tipos de configuraciones</h2>
-                        <p className="subtitulo-perfiles">Añadi hasta {maxPerfiles} perfiles de configuracion</p>
+
+                        <p className="subtitulo-perfiles">
+                            Añadí hasta {maxPerfiles} perfiles de configuración
+                        </p>
 
                         {perfiles.map((perfil) => {
                             const elegido = perfilSeleccionado === perfil.id_perfil;
@@ -164,12 +173,21 @@ export default function ConfigUsuario() {
                                     value={nuevoNombre}
                                     onChange={(e) => setNuevoNombre(e.target.value)}
                                 />
-                                <button type="submit" className="btn-guardar-perfil">Guardar</button>
+
+                                <button type="submit" className="btn-guardar-perfil">
+                                    Guardar
+                                </button>
                             </form>
                         )}
                     </section>
 
-                    <button className="btn-azul btn-atras btn-volver" onClick={() => window.history.back()}>← Atras</button>
+                    <button
+                        type="button"
+                        className="btn-azul btn-atras btn-volver"
+                        onClick={() => window.history.back()}
+                    >
+                        ← Atrás
+                    </button>
                 </main>
             </Caja>
         </Layout>

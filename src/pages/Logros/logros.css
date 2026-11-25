@@ -1,17 +1,30 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@400;500;700&display=swap');
 
-/* Lista con scroll */
+.titulo-logros {
+    font-family: "Potta One", system-ui;
+    color: white;
+    font-size: 20px;
+}
+
 .contenedor-de-logros {
     display: flex;
     flex-direction: column;
     gap: 12px;
+
     width: 100%;
     max-width: 430px;
     max-height: 340px;
+
     margin: 16px auto;
     padding-right: 6px;
+
     overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
 }
+
 
 .contenedor-de-logros::-webkit-scrollbar {
     width: 8px;
@@ -32,121 +45,164 @@
     scrollbar-color: #e1e3f0 rgba(255, 255, 255, 0.15);
 }
 
-/* Mensajes: cargando, error, lista vacía */
+
 .logros-mensaje {
     padding: 24px 12px;
     text-align: center;
+
     font-family: 'Radio Canada', sans-serif;
     font-size: 17px;
     font-weight: 500;
+
     color: #ffffff;
 }
 
-/* Card */
+/* =================================
+   TARJETAS DE LOGROS
+   ================================= */
+
 .logro {
     flex-shrink: 0;
+
     display: flex;
     align-items: center;
     gap: 12px;
+
     padding: 6px;
+
     border-radius: 4px;
     border: 2px solid transparent;
+
     background: #E2E5EF;
+
     transition: border-color 0.15s;
+    box-sizing: border-box;
 }
 
 .logro:hover {
     border-color: #1e90ff;
 }
 
-/* Logro todavía no desbloqueado */
+/* Logro bloqueado */
 .logro--bloqueado {
     opacity: 0.6;
     filter: grayscale(0.7);
 }
 
+/* Imagen */
 .logro__imagen {
     flex-shrink: 0;
+
     width: 68px;
     height: 68px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     background: #fff;
     border-radius: 6px;
+
     overflow: hidden;
 }
 
+.logro__imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Información */
 .logro__info {
     flex: 1;
     min-width: 0;
+
     text-align: left;
     font-family: "Potta One", serif;
 }
 
 .logro__info h3 {
     margin: 0;
+
     font-family: 'Radio Canada', sans-serif;
     font-size: 19px;
     font-weight: 700;
+
     color: #3080A2;
+
+    overflow-wrap: anywhere;
 }
 
 .logro__info p {
     margin: 2px 0 0;
+
     font-family: 'Radio Canada', sans-serif;
     font-size: 15px;
     font-weight: 400;
+
     color: #646DCF;
+    overflow-wrap: anywhere;
 }
 
-/* Barra de progreso */
+
 .logro__progreso {
     display: flex;
     align-items: center;
     gap: 8px;
+
     margin-top: 6px;
 }
 
 .logro__barra {
     flex: 1;
+
     height: 8px;
+
     border-radius: 4px;
     background: #C9CDE6;
+
     overflow: hidden;
 }
 
 .logro__barra-relleno {
     height: 100%;
+
     border-radius: 4px;
     background: #646DCF;
+
     transition: width 0.3s ease;
 }
 
-/* Desbloqueado: la barra completa cambia de color */
 .logro:not(.logro--bloqueado) .logro__barra-relleno {
     background: #3080A2;
 }
 
 .logro__progreso small {
     flex-shrink: 0;
+
     font-family: 'Radio Canada', sans-serif;
     font-size: 13px;
     font-weight: 500;
+
     color: #646DCF;
 }
 
-/* Botón volver */
+
 .btn-volver {
     display: block;
+
     margin: 0 auto;
     padding: 8px 20px;
+
     border: none;
     border-radius: 8px;
+
     background-color: #E7E7E9;
     color: #646DCF;
+
     font-family: "Potta One", system-ui;
     font-size: 16px;
+
     cursor: pointer;
 }
 
@@ -157,4 +213,106 @@
 .btn-volver:focus-visible {
     outline: 3px solid rgba(255, 255, 255, 0.8);
     outline-offset: 2px;
+}
+
+/* =================================
+   TABLETS
+   ================================= */
+
+@media screen and (max-width: 1024px) {
+
+    .contenedor-de-logros {
+        max-width: 430px;
+        max-height: 300px;
+        gap: 10px;
+    }
+
+    .logro__imagen {
+        width: 60px;
+        height: 60px;
+    }
+
+    .logro__info h3 {
+        font-size: 17px;
+    }
+
+    .logro__info p {
+        font-size: 14px;
+    }
+}
+
+
+@media screen and (max-width: 600px) {
+
+    .contenedor-de-logros {
+        max-width: 430px;
+        max-height: 42vw;
+
+        margin: 10px auto;
+        gap: 8px;
+    }
+
+    .logro {
+        gap: 8px;
+        padding: 5px;
+    }
+
+    .logro__imagen {
+        width: 48px;
+        height: 48px;
+    }
+
+    .logro__info h3 {
+        font-size: 15px;
+    }
+
+    .logro__info p {
+        font-size: 12px;
+    }
+
+    .logro__progreso {
+        gap: 5px;
+        margin-top: 4px;
+    }
+
+    .logro__barra {
+        height: 6px;
+    }
+
+    .logro__progreso small {
+        font-size: 11px;
+    }
+
+    .logros-mensaje {
+        font-size: 14px;
+        padding: 15px 8px;
+    }
+
+    .btn-volver {
+        padding: 6px 16px;
+        font-size: 14px;
+    }
+}
+
+
+@media screen and (max-height: 450px) {
+
+    .contenedor-de-logros {
+        max-height: 38vh;
+        margin: 8px auto;
+        gap: 6px;
+    }
+
+    .logro__imagen {
+        width: 42px;
+        height: 42px;
+    }
+
+    .logro__info h3 {
+        font-size: 14px;
+    }
+
+    .logro__info p {
+        font-size: 11px;
+    }
 }

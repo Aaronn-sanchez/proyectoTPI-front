@@ -1,15 +1,62 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400;500;600;700&display=swap');
 
+/* ---------- Dimensiones de la pantalla ---------- */
+
+:root {
+    --ajustes-ancho: 100vw;
+    --ajustes-alto: 100dvh;
+}
+
+/* Cuando el dispositivo está físicamente en vertical,
+   intercambiamos las dimensiones para adaptarlas
+   a la pantalla que se muestra girada. */
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+    :root {
+        --ajustes-ancho: 100dvh;
+        --ajustes-alto: 100vw;
+    }
+}
+
+/* ---------- Caja principal ---------- */
+
+.caja-menu-base.caja-ajustes {
+    width: min(430px, calc(var(--ajustes-ancho) - 30px));
+    max-width: calc(var(--ajustes-ancho) - 30px);
+    max-height: calc(var(--ajustes-alto) - 30px);
+    padding: 30px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Barra de desplazamiento */
+.caja-ajustes::-webkit-scrollbar {
+    width: 7px;
+}
+
+.caja-ajustes::-webkit-scrollbar-thumb {
+    background-color: #b8bde8;
+    border-radius: 10px;
+}
+
+.caja-ajustes {
+    scrollbar-width: thin;
+    scrollbar-color: #b8bde8 transparent;
+}
+
 /* ---------- Contenedor general ---------- */
+
 .contenedor-ajustes {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
     max-width: 340px;
     margin: 0 auto;
     font-family: 'Radio Canada', sans-serif;
     color: white;
+    box-sizing: border-box;
 }
 
 .contenedor-ajustes h1 {
@@ -22,7 +69,8 @@
 .seccion-ajuste {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    min-width: 0;
 }
 
 .seccion-ajuste h2 {
@@ -31,9 +79,12 @@
     font-weight: 700;
 }
 
+/* ---------- Control de volumen ---------- */
+
 .slider-musica {
-    --oscuro: #6c6bc2;  
-    --claro: #b8bde8;    
+    --oscuro: #6c6bc2;
+    --claro: #b8bde8;
+
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
@@ -45,7 +96,7 @@
     background: linear-gradient(
         to right,
         var(--oscuro) calc(12px + (100% - 24px) * var(--valor, 75) / 100),
-        var(--claro)  calc(12px + (100% - 24px) * var(--valor, 75) / 100)
+        var(--claro) calc(12px + (100% - 24px) * var(--valor, 75) / 100)
     );
 }
 
@@ -68,14 +119,18 @@
     cursor: pointer;
 }
 
+/* ---------- Idiomas ---------- */
+
 .contenedor-idiomas {
     display: flex;
     justify-content: center;
-    gap: 56px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .btn-idioma {
-    min-width: 104px;
+    flex: 1;
+    min-width: 0;
     padding: 10px 14px;
     border: 0;
     border-radius: 8px;
@@ -87,8 +142,15 @@
     cursor: pointer;
 }
 
+.btn-idioma--activo {
+    background-color: #8584d0;
+    box-shadow: 0 0 0 2px white;
+}
+
+/* ---------- Perfiles ---------- */
+
 .subtitulo-perfiles {
-    margin: -8px 0 0;
+    margin: -5px 0 0;
     font-size: 13px;
     font-weight: 400;
 }
@@ -96,13 +158,16 @@
 .fila-perfil {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
 }
 
 .btn-perfil,
 .input-perfil {
     flex: 1;
     min-width: 0;
+    box-sizing: border-box;
     padding: 12px 14px;
     border: 2px solid #3a3fb0;
     border-radius: 8px;
@@ -115,6 +180,7 @@
 
 .btn-perfil {
     cursor: pointer;
+    overflow-wrap: anywhere;
 }
 
 .perfil-seleccionado {
@@ -126,6 +192,7 @@
 }
 
 .btn-cerrar-perfil {
+    flex-shrink: 0;
     width: 40px;
     height: 40px;
     border: 0;
@@ -138,6 +205,7 @@
 }
 
 .btn-guardar-perfil {
+    flex-shrink: 0;
     padding: 10px 14px;
     border: 0;
     border-radius: 8px;
@@ -148,6 +216,9 @@
     font-size: 15px;
     cursor: pointer;
 }
+
+/* ---------- Mensajes de error ---------- */
+
 .ajustes-error {
     margin: 0;
     padding: 8px 12px;
@@ -157,9 +228,152 @@
     font-size: 14px;
     font-weight: 600;
     text-align: center;
+    overflow-wrap: anywhere;
 }
 
-.btn-idioma--activo {
-    background-color: #8584d0;
-    box-shadow: 0 0 0 2px white;
+/* ---------- Tablets ---------- */
+
+@media screen and (max-width: 1024px) {
+    .caja-menu-base.caja-ajustes {
+        padding: 26px;
+    }
+
+    .contenedor-ajustes {
+        gap: 10px;
+    }
+
+    .contenedor-ajustes h1 {
+        font-size: 25px;
+    }
+
+    .seccion-ajuste h2 {
+        font-size: 17px;
+    }
+
+    .btn-perfil,
+    .input-perfil {
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+}
+
+/* ---------- Celulares ---------- */
+
+@media screen and (max-width: 600px) {
+    .caja-menu-base.caja-ajustes {
+        width: min(430px, calc(var(--ajustes-ancho) - 24px));
+        max-width: calc(var(--ajustes-ancho) - 24px);
+        max-height: calc(var(--ajustes-alto) - 24px);
+        padding: 20px;
+        border-radius: 18px;
+    }
+
+    .contenedor-ajustes {
+        gap: 9px;
+    }
+
+    .contenedor-ajustes h1 {
+        font-size: 21px;
+    }
+
+    .seccion-ajuste {
+        gap: 7px;
+    }
+
+    .seccion-ajuste h2 {
+        font-size: 15px;
+    }
+
+    .slider-musica {
+        height: 14px;
+    }
+
+    .slider-musica::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    .slider-musica::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    .contenedor-idiomas {
+        gap: 10px;
+    }
+
+    .btn-idioma {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .subtitulo-perfiles {
+        font-size: 11px;
+    }
+
+    .btn-perfil,
+    .input-perfil {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .btn-cerrar-perfil {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+
+    .btn-guardar-perfil {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .ajustes-error {
+        font-size: 12px;
+    }
+}
+
+/* ---------- Dispositivos con poca altura ---------- */
+
+@media screen and (max-height: 450px) {
+    .caja-menu-base.caja-ajustes {
+        padding: 14px 20px;
+    }
+
+    .contenedor-ajustes {
+        gap: 7px;
+    }
+
+    .contenedor-ajustes h1 {
+        font-size: 19px;
+    }
+
+    .seccion-ajuste {
+        gap: 5px;
+    }
+
+    .seccion-ajuste h2 {
+        font-size: 14px;
+    }
+
+    .btn-perfil,
+    .input-perfil {
+        padding: 7px 9px;
+        font-size: 12px;
+    }
+
+    .btn-idioma {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .btn-cerrar-perfil {
+        width: 30px;
+        height: 30px;
+    }
+
+    .btn-guardar-perfil {
+        padding: 6px 9px;
+        font-size: 11px;
+    }
 }

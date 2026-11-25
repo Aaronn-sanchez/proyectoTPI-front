@@ -1,22 +1,24 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import api from './cliente';
 
-async function pedir(ruta, { metodo = 'GET', cuerpo } = {}) {
-    const res = await fetch(`${API_URL}/api/configuracion${ruta}`, {
-        method: metodo,
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: cuerpo ? JSON.stringify(cuerpo) : undefined,
-    });
+const RUTA = '/api/configuracion';
 
-    const datos = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(datos.error || 'Error de conexión');
-    return datos;
-}
+const sacarDatos = (respuesta) => respuesta.data;
 
-export const obtenerConfiguracion = () => pedir('');
-export const actualizarConfiguracion = (cambios) => pedir('', { metodo: 'PATCH', cuerpo: cambios });
-export const crearPerfil = (nombre) => pedir('/perfiles', { metodo: 'POST', cuerpo: { nombre } });
-export const aplicarPerfil = (id) => pedir(`/perfiles/${id}/aplicar`, { metodo: 'POST' });
-export const borrarPerfil = (id) => pedir(`/perfiles/${id}`, { metodo: 'DELETE' });
+const traducirError = (error) => {
+    throw new Error(error.response?.data?.error || 'No se pudo conectar con el servidor');
+};
+
+export const obtenerConfiguracion = () =>
+    api.get(RUTA).then(sacarDatos).catch(traducirError);
+
+export const actualizarConfiguracion = (cambios) =>
+    api.patch(RUTA, cambios).then(sacarDatos).catch(traducirError);
+
+export const crearPerfil = (nombre) =>
+    api.post(`${RUTA}/perfiles`, { nombre }).then(sacarDatos).catch(traducirError);
+
+export const aplicarPerfil = (id) =>
+    api.post(`${RUTA}/perfiles/${id}/aplicar`).then(sacarDatos).catch(traducirError);
+
+export const borrarPerfil = (id) =>
+    api.delete(`${RUTA}/perfiles/${id}`).then(sacarDatos).catch(traducirError);

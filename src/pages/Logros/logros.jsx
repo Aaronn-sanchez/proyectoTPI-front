@@ -33,8 +33,8 @@ export default function Logros() {
     return (
         <Layout>
             <CajaMenu>
-                <h1>Mis logros</h1>
-
+                <h1 className="titulo-logros">Mis logros</h1>
+                
                 <main className="contenedor-de-logros">
                     {cargando && <p className="logros-mensaje">Cargando logros...</p>}
 

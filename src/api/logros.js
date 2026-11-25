@@ -1,6 +1,5 @@
 import api from './cliente';
 
-// Devuelve { logros: [{ id_logro, codigo, titulo, descripcion, meta, progreso, fecha_desbloqueo, desbloqueado }] }
 export async function obtenerLogros() {
     const respuesta = await api.get('/api/logros');
     return respuesta.data;

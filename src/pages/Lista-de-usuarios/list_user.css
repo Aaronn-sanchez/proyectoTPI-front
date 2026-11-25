@@ -1,135 +1,200 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400;500;600;700&display=swap');
 
-/* ---------- Estructura general ---------- */
+/* ---------- CAJA GENERAL ---------- */
+
+.lista-usuarios-caja {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(1100px, calc(100vw - 60px));
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 .contenedor-principal {
     display: grid;
-    grid-template-columns: 1fr 2px 2fr;
-    gap: 24px;
+    grid-template-columns: minmax(180px, 1fr) 2px minmax(0, 2fr);
+    gap: 20px;
+    width: 100%;
+    max-height: min(520px, calc(100dvh - 190px));
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.contenedor-principal::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+.contenedor-principal::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 5px;
+}
+
+.contenedor-principal {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.6) transparent;
 }
 
 .divisor-vertical {
     background-color: white;
+    min-height: 100%;
 }
 
 .contenedor-de-lista-de-usuarios,
 .contenedor-de-roles {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    font-size: 12px;
     align-items: center;
+    gap: 12px;
+    min-width: 0;
+    font-size: 12px;
 }
 
-.lista-usuarios-caja {
-    position: relative;
+.contenedor-de-lista-de-usuarios h1,
+.contenedor-de-roles h1 {
+    margin: 0;
+    text-align: center;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 20px;
+    color: white;
 }
 
-.btn-atras-usuarios {
-    position: absolute;
-    left: 43px;
-    bottom: 29px;
+.btn-atras {
+    margin-top: 15px;
 }
 
-/* ---------- Lista de usuarios ---------- */
+/* ---------- LISTA DE USUARIOS ---------- */
+
 .tarjeta-de-usuarios {
-    background-color: #ffec59;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-radius: 10px;
-    padding: 9px;
-    border: 3px solid transparent;
-
-    p {
-        font-family: 'Radio Canada', sans-serif;
-        font-weight: 600;
-        color: #333232;
-        font-size: 17px;
-    }
-
+    gap: 8px;
     width: 100%;
+    padding: 9px;
+    box-sizing: border-box;
+    background-color: #ffec59;
+    border: 3px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.tarjeta-de-usuarios p {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-family: 'Radio Canada', sans-serif;
+    font-weight: 600;
+    color: #333232;
+    font-size: 17px;
 }
 
 .tarjeta-seleccionada {
     border-color: #550D84;
 }
 
-.btn-cerrar-usuario-lista {
-    background-color: red;
-    padding: 5px 10px;
-    border-radius: 100%;
-    color: white;
-    font-family: 'Radio Canada', sans-serif;
-    font-size: 14px;
+.contenedor-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .modificar {
-    background-color: darkorange;
-    padding: 5px;
     display: flex;
     justify-content: center;
+    padding: 5px;
+    background-color: darkorange;
     border-radius: 5px;
     font-family: 'Radio Canada', sans-serif;
     font-weight: 500;
     font-size: 14px;
 }
 
-.contenedor-acciones {
-    display: flex;
-    gap: 12px;
+.btn-cerrar-usuario-lista {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 100%;
+    background-color: red;
+    color: white;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
 }
 
-/* ---------- Roles ---------- */
+.usuarios-mensaje {
+    margin: 8px 0;
+    color: white;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.usuarios-mensaje--error {
+    color: #ffd1d1;
+}
+
+/* ---------- ROLES ---------- */
+
 .roles-contenido {
     display: grid;
-    grid-template-columns: 1fr 120px;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) minmax(90px, 0.4fr);
     align-items: start;
+    gap: 14px;
+    width: 100%;
     font-size: 16px;
 }
 
 .roles-columna-izquierda {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
+    min-width: 0;
 }
 
 .tarjeta-amarilla {
+    padding: 14px;
+    box-sizing: border-box;
     background-color: #ffec59;
     border-radius: 5px;
-    padding: 14px;
-    font-family: 'Radio Canada', sans-serif;
     color: #333232;
-
-    h2 {
-        margin: 0 0 8px;
-        font-size: 16px;
-        font-weight: 700;
-    }
-
-    small {
-        display: block;
-        font-size: 12px;
-        opacity: 0.8;
-    }
+    font-family: 'Radio Canada', sans-serif;
 }
 
-/* Formulario */
+.tarjeta-amarilla h2 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.tarjeta-amarilla small {
+    display: block;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* FORMULARIO DE ROL */
+
 .campo-nombre-rol {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
     font-size: 14px;
+}
 
-    input {
-        flex: 1;
-        min-width: 0;
-        padding: 4px 8px;
-        border: 0;
-        border-radius: 5px;
-        background-color: #d9c85a;
-    }
+.campo-nombre-rol input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 5px;
+    background-color: #d9c85a;
 }
 
 .formulario-rol-pie {
@@ -139,17 +204,18 @@
 }
 
 .btn-guardar-rol {
-    background-color: #550D84;
-    color: white;
+    padding: 4px 14px;
     border: 0;
     border-radius: 5px;
-    padding: 4px 14px;
+    background-color: #550D84;
+    color: white;
     font-family: 'Radio Canada', sans-serif;
     font-weight: 600;
     cursor: pointer;
 }
 
-/* Checklist de servicios */
+/* SERVICIOS */
+
 .servicio-item {
     display: flex;
     align-items: center;
@@ -157,19 +223,22 @@
     margin: 6px 0;
     font-weight: 600;
     font-size: 14px;
-
-    input {
-        width: 20px;
-        height: 20px;
-        accent-color: #550D84;
-    }
 }
 
-/* Lista de roles creados */
+.servicio-item input {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    accent-color: #550D84;
+}
+
+/* ROLES CREADOS */
+
 .lista-de-roles {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-width: 0;
 }
 
 .rol-creado {
@@ -177,41 +246,247 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 80px;
+    min-height: 80px;
+    padding: 8px;
+    box-sizing: border-box;
     background-color: #ffec59;
     border: 3px solid #550D84;
     border-radius: 5px;
+}
 
-    p {
-        margin: 0;
-        font-family: 'Radio Canada', sans-serif;
-        font-weight: 700;
-        color: #333232;
-    }
+.rol-creado p {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-family: 'Radio Canada', sans-serif;
+    font-weight: 700;
+    color: #333232;
 }
 
 .btn-cerrar-rol {
     position: absolute;
     top: -8px;
     right: -8px;
+    padding: 1px 6px;
+    border-radius: 100%;
     background-color: red;
     color: white;
-    border-radius: 100%;
-    padding: 1px 6px;
     font-family: 'Radio Canada', sans-serif;
     font-size: 11px;
 }
 
-@media (max-width: 800px) {
-    .contenedor-principal {
-        grid-template-columns: 1fr;
+/* ---------- TABLETS Y PANTALLAS MEDIANAS ---------- */
+
+@media screen and (max-width: 1024px) {
+    .lista-usuarios-caja {
+        width: calc(100vw - 40px);
     }
 
-    .divisor-vertical {
-        display: none;
+    .contenedor-principal {
+        gap: 14px;
+        max-height: min(480px, calc(100dvh - 170px));
+    }
+
+    .contenedor-de-lista-de-usuarios h1,
+    .contenedor-de-roles h1 {
+        font-size: 18px;
+    }
+
+    .tarjeta-de-usuarios {
+        padding: 7px;
+    }
+
+    .tarjeta-de-usuarios p {
+        font-size: 14px;
+    }
+
+    .modificar {
+        font-size: 12px;
     }
 
     .roles-contenido {
-        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .tarjeta-amarilla {
+        padding: 10px;
+    }
+
+    .tarjeta-amarilla h2 {
+        font-size: 14px;
+    }
+
+    .tarjeta-amarilla small {
+        font-size: 11px;
+    }
+
+    .servicio-item {
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .servicio-item input {
+        width: 17px;
+        height: 17px;
+    }
+}
+
+/* ---------- CELULARES ---------- */
+
+@media screen and (max-width: 600px) {
+    .lista-usuarios-caja {
+        width: calc(100vw - 25px);
+    }
+
+    .contenedor-principal {
+        gap: 10px;
+    }
+
+    .contenedor-de-lista-de-usuarios,
+    .contenedor-de-roles {
+        gap: 8px;
+    }
+
+    .contenedor-de-lista-de-usuarios h1,
+    .contenedor-de-roles h1 {
+        font-size: 15px;
+    }
+
+    .tarjeta-de-usuarios {
+        gap: 5px;
+        padding: 5px;
+        border-width: 2px;
+        border-radius: 7px;
+    }
+
+    .tarjeta-de-usuarios p {
+        font-size: 12px;
+    }
+
+    .contenedor-acciones {
+        gap: 4px;
+    }
+
+    .modificar {
+        padding: 4px;
+        font-size: 10px;
+    }
+
+    .btn-cerrar-usuario-lista {
+        padding: 4px 7px;
+        font-size: 11px;
+    }
+
+    .roles-contenido {
+        grid-template-columns: minmax(0, 1fr) minmax(65px, 0.35fr);
+        gap: 7px;
+    }
+
+    .roles-columna-izquierda {
+        gap: 8px;
+    }
+
+    .tarjeta-amarilla {
+        padding: 8px;
+    }
+
+    .tarjeta-amarilla h2 {
+        font-size: 12px;
+    }
+
+    .tarjeta-amarilla small {
+        font-size: 10px;
+    }
+
+    .campo-nombre-rol {
+        flex-wrap: wrap;
+        gap: 4px;
+        font-size: 11px;
+    }
+
+    .campo-nombre-rol input {
+        flex-basis: 100%;
+    }
+
+    .btn-guardar-rol {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .servicio-item {
+        gap: 4px;
+        margin: 5px 0;
+        font-size: 10px;
+    }
+
+    .servicio-item input {
+        width: 14px;
+        height: 14px;
+    }
+
+    .rol-creado {
+        min-height: 60px;
+        padding: 5px;
+    }
+
+    .rol-creado p {
+        font-size: 11px;
+    }
+
+    .usuarios-mensaje {
+        font-size: 11px;
+    }
+
+    .btn-atras {
+        margin-top: 10px;
+    }
+}
+
+
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+    .lista-usuarios-caja {
+        width: min(1100px, calc(100dvh - 40px));
+    }
+
+    .contenedor-principal {
+        max-height: calc(100vw - 150px);
+    }
+}
+
+/* ---------- POCA ALTURA EN MODO HORIZONTAL ---------- */
+
+@media screen and (max-height: 450px) and (orientation: landscape) {
+    .lista-usuarios-caja {
+        padding: 20px;
+    }
+
+    .contenedor-principal {
+        max-height: calc(100dvh - 115px);
+        gap: 10px;
+    }
+
+    .contenedor-de-lista-de-usuarios,
+    .contenedor-de-roles {
+        gap: 6px;
+    }
+
+    .contenedor-de-lista-de-usuarios h1,
+    .contenedor-de-roles h1 {
+        font-size: 14px;
+    }
+
+    .tarjeta-amarilla {
+        padding: 7px;
+    }
+
+    .servicio-item {
+        margin: 3px 0;
+    }
+
+    .rol-creado {
+        min-height: 50px;
+    }
+
+    .btn-atras {
+        margin-top: 7px;
     }
 }

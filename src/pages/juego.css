@@ -1,0 +1,58 @@
+
+.juego-pantalla {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #1a1a1a;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.juego-contenedor {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+}
+
+.juego-contenedor canvas {
+    display: block;
+}
+
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+    .juego-pantalla {
+        top: 0;
+        left: 100vw;
+
+        width: 100dvh;
+        height: 100vw;
+
+        transform: rotate(90deg);
+        transform-origin: top left;
+    }
+}
+
+
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+    .juego-pantalla {
+        top: 0;
+        left: 0;
+
+        width: 100vw;
+        height: 100dvh;
+
+        transform: none;
+    }
+}

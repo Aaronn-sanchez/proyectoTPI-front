@@ -1,32 +1,85 @@
+
 .caja-menu-base {
     box-sizing: border-box;
     z-index: 3;
+
     background-color: #79A1CF;
     border-radius: 25px;
+
     outline: 18px solid #F89E38;
     outline-offset: -18px;
+
     width: fit-content;
-    /* se ajusta al ancho del contenido */
+    max-width: 100%;
     height: fit-content;
-    /* se ajusta al alto del contenido */
+
     padding: 40px;
-    /* debe ser mayor a 18px (grosor del borde) */
 }
 
-/* Tamaños fijos OPCIONALES: solo se aplican si pasas size */
+/* Tamaños opcionales */
 .caja-menu-principal {
     width: 380px;
     height: 360px;
+    max-width: 100%;
 }
 
 .caja-menu-amplia {
     width: 600px;
     height: 450px;
+    max-width: 100%;
 }
 
-/* Cajas para el rol QA Tester (el perfil queda con su estilo propio) */
+/* Estilo QA Tester */
 .caja-menu-qa:not(.color-de-perfil) {
     background-color: #79A1CF;
     outline-color: #82529D;
     box-shadow: inset 0 0 0 20px #6E3F8A;
+}
+
+/* TABLETS Y PANTALLAS MEDIANAS */
+@media (max-width: 900px) {
+    .caja-menu-base {
+        padding: 32px;
+    }
+
+    .caja-menu-principal {
+        width: min(380px, 90vw);
+        height: auto;
+        min-height: 330px;
+    }
+
+    .caja-menu-amplia {
+        width: min(600px, 90vw);
+        height: auto;
+    }
+}
+
+/* CELULARES */
+@media (max-width: 600px) {
+    .caja-menu-base {
+        padding: 28px;
+        border-radius: 20px;
+        outline-width: 12px;
+        outline-offset: -12px;
+    }
+
+    .caja-menu-principal {
+        width: min(380px, 94vw);
+        min-height: 300px;
+    }
+
+    .caja-menu-amplia {
+        width: 94vw;
+    }
+
+    .caja-menu-qa:not(.color-de-perfil) {
+        box-shadow: inset 0 0 0 14px #6E3F8A;
+    }
+}
+
+
+@media (max-width: 380px) {
+    .caja-menu-base {
+        padding: 22px;
+    }
 }

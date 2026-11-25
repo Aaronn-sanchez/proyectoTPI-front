@@ -9,18 +9,30 @@ export default function PerfilMini() {
     const esQA = usuario?.roles?.includes(2);
 
     function cerrarSiEsOverlay(e) {
-        if (e.target === e.currentTarget) setAbierto(false);
+        if (e.target === e.currentTarget) {
+            setAbierto(false);
+        }
     }
 
     return (
         <>
-            <button type="button" className="perfil-mini" onClick={() => setAbierto(true)}>
+            <button
+                type="button"
+                className="perfil-mini"
+                onClick={() => setAbierto(true)}
+            >
                 {esQA && <span className="corona">👑</span>}
-                <span className="nombre-mini">{usuario?.nombre}</span>
+
+                <span className="nombre-mini">
+                    {usuario?.nombre || 'Mi perfil'}
+                </span>
             </button>
 
             {abierto && (
-                <div className="overlay-perfil" onClick={cerrarSiEsOverlay}>
+                <div
+                    className="overlay-perfil"
+                    onClick={cerrarSiEsOverlay}
+                >
                     <Perfil />
                 </div>
             )}

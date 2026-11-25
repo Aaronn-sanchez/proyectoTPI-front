@@ -5,6 +5,7 @@ export async function listarGuardados(idNivel) {
     return r.data; // { guardados, max, disponibles }
 }
 
+
 export async function crearGuardado(datos) {
     const r = await api.post('/api/checkpoint', datos);
     return r.data;
