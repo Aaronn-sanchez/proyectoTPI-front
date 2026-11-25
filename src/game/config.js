@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
+const DEBUG = import.meta.env.DEV && import.meta.env.VITE_DEBUG === 'true';
 
 // nivel: una entrada de NIVELES ({ escena, clave, nombre })
 export function crearConfig(contenedor, nivel, guardadoInicial = null) {
@@ -13,7 +14,7 @@ export function crearConfig(contenedor, nivel, guardadoInicial = null) {
         pixelArt: true,
         physics: {
             default: 'matter',
-            matter: { gravity: { y: 1.2 }, debug: true }
+            matter: { gravity: { y: 1.2 }, debug: DEBUG }
         },
         scale: {
             mode: Phaser.Scale.FIT,

@@ -11,6 +11,10 @@ import { crearBotones } from "../sistemas/botones.js";
 import { crearPuertas } from "../sistemas/puertas.js";
 import { crearFinNivel } from "../sistemas/finNivel.js";
 
+import wachin from "../entidades/clases/wachin.js";
+import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/personajes/carpincho.js";
+import { CAPAS, CAPAS_VISUALES } from "../configs/constantes.js";
+
 export default class EscenaBase extends Scene {
     constructor(clave, claveJson, idNivelLDtk) {
         super(clave);
@@ -67,13 +71,53 @@ export default class EscenaBase extends Scene {
     }
 
     // ---------- Ganchos (vacíos por defecto) ----------
+    crearPersonaje(nivel) {
+        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
+
+        const spawn = capaEntidades?.entityInstances.find(
+            (e) => e.__identifier === "Spawn_carpincho"
+        );
+
+        const guardado = this.guardadoInicial;
+
+        const tienePosicionGuardada =
+            guardado &&
+            guardado.pos_x !== null &&
+            guardado.pos_x !== undefined &&
+            guardado.pos_y !== null &&
+            guardado.pos_y !== undefined &&
+            Number.isFinite(Number(guardado.pos_x)) &&
+            Number.isFinite(Number(guardado.pos_y));
+
+        const inicioX = tienePosicionGuardada
+            ? Number(guardado.pos_x)
+            : spawn
+                ? spawn.px[0] + spawn.width / 2 + nivel.worldX
+                : 160;
+
+        const inicioY = tienePosicionGuardada
+            ? Number(guardado.pos_y)
+            : spawn
+                ? spawn.px[1] + spawn.height / 2 + nivel.worldY
+                : 288;
+
+        this.puntoRespawn = { x: inicioX, y: inicioY };
+
+        prepararFramesCarpincho(this);
+
+        this.carpincho = new wachin(this, inicioX, inicioY, "carpincho", iniciarCarpincho);
+        this.carpincho.setDepth(PROFUNDIDAD.CARPINCHO);
+    }
+
+    obtenerCapasVisuales() { return CAPAS_VISUALES; }
+
     alCrear() { }
     alActualizar(tiempo, delta) { }
 
     // ---------- Mundo ----------
     crearMundo(datosLDtk) {
         datosLDtk.levels.forEach((nivel) => {
-            crearCapasVisuales(this, nivel);
+            crearCapasVisuales(this, nivel, this.obtenerCapasVisuales());
             crearColisiones(this, nivel);
             crearCurvas(this, nivel);
             crearCajas(this, nivel);
