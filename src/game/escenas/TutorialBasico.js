@@ -9,8 +9,8 @@ const CLAVE_NIVEL = "nivel_0";
 const ID_NIVEL = "Level_0";
 
 export default class TutorialBasico extends EscenaBase {
-    constructor(guardadoInicial = null) {
-        super("tutorialBasico", CLAVE_NIVEL, ID_NIVEL, guardadoInicial);
+    constructor() {
+        super("tutorialBasico", CLAVE_NIVEL, ID_NIVEL);
     }
 
     preload() {

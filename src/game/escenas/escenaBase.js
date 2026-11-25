@@ -1,4 +1,4 @@
-import Phaser, { Scene } from "phaser";
+import { Scene } from "phaser";
 
 import { SONIDOS_CONTACTO, PROFUNDIDAD } from "../configs/constantes.js";
 import { crearCapasVisuales } from "../sistemas/capasVisuales.js";
@@ -12,11 +12,14 @@ import { crearPuertas } from "../sistemas/puertas.js";
 import { crearFinNivel } from "../sistemas/finNivel.js";
 
 export default class EscenaBase extends Scene {
-    constructor(clave, claveJson, idNivelLDtk, guardadoInicial = null) {
+    constructor(clave, claveJson, idNivelLDtk) {
         super(clave);
         this.claveJson = claveJson;
         this.idNivelLDtk = idNivelLDtk;
-        this.guardadoInicial = guardadoInicial;
+    }
+
+    init(data) {
+        this.guardadoInicial = data?.guardado ?? null;
 
         // Estado compartido por todos los sistemas
         this.puertas = [];
@@ -38,9 +41,9 @@ export default class EscenaBase extends Scene {
         const limites = this.calcularLimitesMundo(this.datosLDtk);
         this.matter.world.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
 
-        this.crearMundo(this.datosLDtk);   // por ahora definido en cada nivel
+        this.crearMundo(this.datosLDtk);
         this.aplicarEstadoObjetos();
-        this.crearFondo();                 // por ahora definido en cada nivel
+        this.crearFondo();
         this.crearPersonaje(this.nivel);   // gancho: cada nivel elige personaje
 
         this.crearDeteccionContactos();
@@ -67,6 +70,21 @@ export default class EscenaBase extends Scene {
     alCrear() { }
     alActualizar(tiempo, delta) { }
 
+    // ---------- Mundo ----------
+    crearMundo(datosLDtk) {
+        datosLDtk.levels.forEach((nivel) => {
+            crearCapasVisuales(this, nivel);
+            crearColisiones(this, nivel);
+            crearCurvas(this, nivel);
+            crearCajas(this, nivel);
+            crearPlantas(this, nivel);
+            crearCheckpoints(this, nivel);
+            crearBotones(this, nivel);
+            crearPuertas(this, nivel);
+            crearFinNivel(this, nivel);
+        });
+    }
+
     // ---------- Helpers ----------
     buscarCapa(nivel, identificador) {
         return nivel.layerInstances.find((l) => l.__identifier === identificador);
@@ -79,6 +97,56 @@ export default class EscenaBase extends Scene {
         const derecha = Math.max(...niveles.map((n) => n.worldX + n.pxWid));
         const abajo = Math.max(...niveles.map((n) => n.worldY + n.pxHei));
         return { x, y, ancho: derecha - x, alto: abajo - y };
+    }
+
+    // ---------- Fondo del cielo ----------
+    crearFondo() {
+        const imagenCielo = this.textures.get("cielo").getSourceImage();
+        const anchoImg = imagenCielo.width;
+        const altoImg = imagenCielo.height;
+
+        // Textura espejada (original + copia volteada) para que no se vea costura.
+        if (!this.textures.exists("cielo_espejo")) {
+            const lienzo = this.textures.createCanvas("cielo_espejo", anchoImg * 2, altoImg);
+            const ctx = lienzo.getContext();
+
+            ctx.drawImage(imagenCielo, 0, 0);
+
+            ctx.save();
+            ctx.translate(anchoImg * 2, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(imagenCielo, 0, 0);
+            ctx.restore();
+
+            lienzo.refresh();
+        }
+
+        this.escalaCielo = 1;
+
+        this.fondoCielo = this.add
+            .tileSprite(0, 0, this.cameras.main.width, altoImg * this.escalaCielo, "cielo_espejo")
+            .setOrigin(0, 0)
+            .setScrollFactor(0)
+            .setDepth(PROFUNDIDAD.CIELO);
+
+        // Color de fondo = último píxel del cielo, para que no quede franja negra.
+        const colorBorde = this.textures.getPixel(Math.floor(anchoImg / 2), altoImg - 1, "cielo");
+        if (colorBorde) {
+            this.cameras.main.setBackgroundColor(colorBorde.color);
+        }
+    }
+
+    // ---------- Cámara y controles ----------
+    crearCamaraYControles(limites) {
+        const cam = this.cameras.main;
+
+        cam.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
+        cam.startFollow(this.carpincho, true, 0.08, 0.08);
+        cam.setFollowOffset(0, 150);
+        cam.centerOn(this.carpincho.x, this.carpincho.y - 150);
+
+        this.teclas = this.input.keyboard.createCursorKeys();
+        this.teclasWASD = this.input.keyboard.addKeys("W,A,S,D,SPACE");
     }
 
     // ---------- Guardado ----------
@@ -165,6 +233,100 @@ export default class EscenaBase extends Scene {
     }
 
     resolverInteraccion(bodyA, bodyB) {
-        // Pegá acá tal cual tu resolverInteraccion actual (procesarColision se elimina)
+        // Identificar el cuerpo principal si es compuesto
+        const obtenerCuerpoPrincipal = (body) =>
+            body.parent && body.parent !== body ? body.parent : body;
+
+        const cuerpoA = obtenerCuerpoPrincipal(bodyA);
+        const cuerpoB = obtenerCuerpoPrincipal(bodyB);
+
+        // Buscar si alguno de los cuerpos es accionable
+        const accionable = [cuerpoA, cuerpoB].find((body) =>
+            body.tags?.includes("accionable")
+        );
+
+        if (accionable) {
+            const otroCuerpo = accionable === cuerpoA ? cuerpoB : cuerpoA;
+
+            if (!otroCuerpo.peso) return;
+
+            // Comportamiento del botón
+            if (accionable.label === "Boton_peso") {
+                if (accionable.activado) return;
+
+                accionable.activado = true;
+
+                const puerta = this.puertas.find(
+                    (p) => p.iid === accionable.objetivo?.entityIid
+                );
+
+                if (puerta && !puerta.abierta) {
+                    puerta.abierta = true;
+
+                    // Quitamos la colisión para permitir el paso
+                    this.matter.world.remove(puerta);
+
+                    // Hacemos desaparecer la puerta gradualmente
+                    this.tweens.add({
+                        targets: puerta.objetoVisual,
+                        alpha: 0,
+                        duration: 1200,
+                        ease: "Linear",
+                        onComplete: () => {
+                            puerta.objetoVisual.destroy();
+                        }
+                    });
+                }
+
+                accionable.objetoVisual.setTexture(
+                    "boton_presionado",
+                    accionable.framePresionado
+                );
+
+                this.sound.play(SONIDOS_CONTACTO.pop.clave);
+                return;
+            }
+
+            // Comportamiento de la puerta
+            if (accionable.label === "Puerta") {
+                return;
+            }
+        }
+
+        // Identificar al carpincho
+        const esCarpincho = (body) =>
+            body === this.carpincho.body || body.parent === this.carpincho.body;
+
+        let objeto;
+
+        if (esCarpincho(bodyA)) {
+            if (bodyA.isSensor) return;
+            objeto = bodyB;
+        } else if (esCarpincho(bodyB)) {
+            if (bodyB.isSensor) return;
+            objeto = bodyA;
+        } else {
+            return;
+        }
+
+        const tags = objeto.tags || [];
+
+        // Daño
+        if (tags.includes("entidad_danio")) {
+            this.reaparecerCarpincho();
+            return;
+        }
+
+        // Checkpoint
+        if (tags.includes("guardado")) {
+            this.activarCheckpoint(objeto);
+            return;
+        }
+
+        // Fin del nivel
+        if (tags.includes("fin_nivel")) {
+            this.finalizarNivel();
+            return;
+        }
     }
 }

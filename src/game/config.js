@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import TutorialBasico from './escenas/TutorialBasico.js';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-export function crearConfig(contenedor, guardadoInicial = null) {
+// nivel: una entrada de NIVELES ({ escena, clave, nombre })
+export function crearConfig(contenedor, nivel, guardadoInicial = null) {
     return {
         type: Phaser.AUTO,
         width: width,
@@ -21,12 +21,12 @@ export function crearConfig(contenedor, guardadoInicial = null) {
             width: width,
             height: height
         },
-        scene: [
-            class extends TutorialBasico {
-                constructor() {
-                    super(guardadoInicial);
-                }
+        // La escena se agrega al arrancar, pasándole el guardado por init(data)
+        scene: [],
+        callbacks: {
+            postBoot: (game) => {
+                game.scene.add(nivel.clave, nivel.escena, true, { guardado: guardadoInicial });
             }
-        ]
+        }
     };
 }
