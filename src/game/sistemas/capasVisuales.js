@@ -1,4 +1,4 @@
-import { TAM_TILE, CAPAS, PROFUNDIDAD } from "../configs/constantes.js";
+import { TAM_TILE } from "../configs/constantes.js";
 import { buscarCapa } from "./utilidadesLDtk.js";
 
 function crearCapaTiles(escena, nivel, nombreCapa, claveTextura, prefijo, profundidad) {
@@ -31,9 +31,9 @@ function crearCapaTiles(escena, nivel, nombreCapa, claveTextura, prefijo, profun
     });
 }
 
-export function crearCapasVisuales(escena, nivel) {
-    crearCapaTiles(escena, nivel, CAPAS.PASTITO, "pastito_tiles", "pasto", PROFUNDIDAD.PASTO);
-    crearCapaTiles(escena, nivel, CAPAS.POZITO, "pozito_tiles", "pozo", PROFUNDIDAD.POZITO);
-    crearCapaTiles(escena, nivel, CAPAS.HIERBAS, "hierbas", "hierba", PROFUNDIDAD.HIERBAS);
-    crearCapaTiles(escena, nivel, CAPAS.PASTITO3, "suelo_nivel2", "suelo2", PROFUNDIDAD.PASTITO3);
+// "capas" es una lista como CAPAS_VISUALES: [{ capa, textura, prefijo, profundidad }]
+export function crearCapasVisuales(escena, nivel, capas) {
+    capas.forEach(({ capa, textura, prefijo, profundidad }) =>
+        crearCapaTiles(escena, nivel, capa, textura, prefijo, profundidad)
+    );
 }

@@ -1,6 +1,12 @@
 import { Scene } from "phaser";
 
-import { SONIDOS_CONTACTO, PROFUNDIDAD } from "../configs/constantes.js";
+import {
+    SONIDOS_CONTACTO,
+    PROFUNDIDAD,
+    CAPAS,
+    CAPAS_VISUALES,
+} from "../configs/constantes.js";
+import { buscarCapa } from "../sistemas/utilidadesLDtk.js";
 import { crearCapasVisuales } from "../sistemas/capasVisuales.js";
 import { crearColisiones } from "../sistemas/colisiones.js";
 import { crearCurvas } from "../sistemas/curvas.js";
@@ -10,16 +16,17 @@ import { crearCheckpoints } from "../sistemas/checkpoints.js";
 import { crearBotones } from "../sistemas/botones.js";
 import { crearPuertas } from "../sistemas/puertas.js";
 import { crearFinNivel } from "../sistemas/finNivel.js";
+import { crearAgua, actualizarAguas } from "../sistemas/agua.js";
 
 import wachin from "../entidades/clases/wachin.js";
 import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/personajes/carpincho.js";
-import { CAPAS, CAPAS_VISUALES } from "../configs/constantes.js";
 
 export default class EscenaBase extends Scene {
-    constructor(clave, claveJson, idNivelLDtk) {
+    constructor(clave, claveJson, idNivelLDtk, rutaJson) {
         super(clave);
         this.claveJson = claveJson;
         this.idNivelLDtk = idNivelLDtk;
+        this.rutaJson = rutaJson;
     }
 
     init(data) {
@@ -29,8 +36,55 @@ export default class EscenaBase extends Scene {
         this.puertas = [];
         this.botones = [];
         this.cajas = [];
-        this.carpincho = null;
+        this.aguas = [];
+        this.aguaPrevia = null;
+        this.personaje = null;      // el personaje que controla el jugador en este nivel
         this.puntoRespawn = null;
+    }
+
+    // ---------- Carga de assets: lo común vive acá ----------
+    preload() {
+        // Efectos de sonido
+        Object.values(SONIDOS_CONTACTO).forEach(({ clave, archivo }) => {
+            this.load.audio(clave, archivo);
+        });
+
+        const escenario = "/assets/sprites/escenario/";
+        const carpincho = "/assets/sprites/carpincho/";
+
+        // Escenario
+        this.load.image("cielo", escenario + "background-cielo.png");
+        this.load.image("pastito_tiles", escenario + "pastitio.png");
+        this.load.image("pozito_tiles", escenario + "pastito-pozito.png");
+        this.load.image("hierbas", escenario + "pastito-pozito-con-hievas.png");
+        this.load.image("suelo_nivel2", escenario + "suelo_de_nivel2.png");
+        this.load.image("flor_espinas", escenario + "florecitas.png");
+        this.load.image("textura_caja", escenario + "caja.png");
+        this.load.image("banderin_checkpoint", escenario + "banderin-checkpoint.png");
+        this.load.image("boton", escenario + "boton.png");
+        this.load.image("boton_presionado", escenario + "boton-presionado.png");
+
+        // Sprites del carpincho
+        this.load.image("carpincho", carpincho + "carpincho.png");
+        this.load.image("frame_1", carpincho + "casi de pie.png");
+        this.load.image("frame_2", carpincho + "correccion frame 4.png");
+        this.load.image("frame_3", carpincho + "frame 1.png");
+        this.load.image("frame_4", carpincho + "frame 2.png");
+        this.load.image("frame_5", carpincho + "frame 3.png");
+        this.load.image("frame_6", carpincho + "frame 5.5.png");
+        this.load.image("frame_7", carpincho + "frame f2-1.png");
+        this.load.image("frame_8", carpincho + "frame f2-2.png");
+        this.load.image("frame_9", carpincho + "frame f2-3.png");
+
+        // JSON de LDtk del nivel
+        this.load.json(this.claveJson, this.rutaJson);
+
+        this.load.on("loaderror", (archivo) => {
+            console.error("No se pudo cargar:", archivo.key);
+            this.game.events.emit("nivel-error-carga", archivo.key);
+        });
+
+        this.cargarAssetsExtra();   // gancho: assets propios del nivel
     }
 
     // ---------- Ciclo de vida: el orden es fijo ----------
@@ -64,18 +118,48 @@ export default class EscenaBase extends Scene {
     }
 
     update(tiempo, delta) {
-        if (!this.carpincho) return;
-        this.carpincho.mover(this.teclas, this.teclasWASD, delta);
-        this.carpincho.adaptarSueloCarpincho(delta);
+        if (!this.personaje) return;
+
+        // El agua va ANTES de mover: aplica flotabilidad y arrastre
+        actualizarAguas(this, tiempo, delta);
+
+        this.moverPersonaje(delta);
         this.alActualizar(tiempo, delta);
     }
 
-    // ---------- Ganchos (vacíos por defecto) ----------
+    // ---------- Ganchos (se sobreescriben por nivel) ----------
+    cargarAssetsExtra() { }
+    alCrear() { }
+    alActualizar(tiempo, delta) { }
+
+    obtenerCapasVisuales() { return CAPAS_VISUALES; }
+
+    // Por defecto el personaje es el carpincho. Un nivel con otro personaje
+    // sobreescribe este método y deja el resultado en this.personaje.
     crearPersonaje(nivel) {
-        const capaEntidades = this.buscarCapa(nivel, CAPAS.ENTIDADES);
+        const { x, y } = this.calcularInicio(nivel, "Spawn_carpincho");
+
+        prepararFramesCarpincho(this);
+
+        this.personaje = new wachin(this, x, y, "carpincho", iniciarCarpincho);
+        this.personaje.setDepth(PROFUNDIDAD.CARPINCHO);
+    }
+
+    // Por defecto: mover + adaptación a pendientes del carpincho.
+    // Un personaje distinto (benteveo) sobreescribe este método.
+    moverPersonaje(delta) {
+        this.personaje.mover(this.teclas, this.teclasWASD, delta);
+        this.personaje.adaptarSueloCarpincho?.(delta);
+    }
+
+    // Posición inicial: la del guardado si existe; si no, la entidad de spawn
+    // de LDtk (por su identificador); si tampoco hay, un valor por defecto.
+    // También deja fijado el primer punto de reaparición.
+    calcularInicio(nivel, identificadorSpawn) {
+        const capaEntidades = buscarCapa(nivel, CAPAS.ENTIDADES);
 
         const spawn = capaEntidades?.entityInstances.find(
-            (e) => e.__identifier === "Spawn_carpincho"
+            (e) => e.__identifier === identificadorSpawn
         );
 
         const guardado = this.guardadoInicial;
@@ -89,30 +173,21 @@ export default class EscenaBase extends Scene {
             Number.isFinite(Number(guardado.pos_x)) &&
             Number.isFinite(Number(guardado.pos_y));
 
-        const inicioX = tienePosicionGuardada
+        const x = tienePosicionGuardada
             ? Number(guardado.pos_x)
             : spawn
                 ? spawn.px[0] + spawn.width / 2 + nivel.worldX
                 : 160;
 
-        const inicioY = tienePosicionGuardada
+        const y = tienePosicionGuardada
             ? Number(guardado.pos_y)
             : spawn
                 ? spawn.px[1] + spawn.height / 2 + nivel.worldY
                 : 288;
 
-        this.puntoRespawn = { x: inicioX, y: inicioY };
-
-        prepararFramesCarpincho(this);
-
-        this.carpincho = new wachin(this, inicioX, inicioY, "carpincho", iniciarCarpincho);
-        this.carpincho.setDepth(PROFUNDIDAD.CARPINCHO);
+        this.puntoRespawn = { x, y };
+        return { x, y };
     }
-
-    obtenerCapasVisuales() { return CAPAS_VISUALES; }
-
-    alCrear() { }
-    alActualizar(tiempo, delta) { }
 
     // ---------- Mundo ----------
     crearMundo(datosLDtk) {
@@ -126,12 +201,8 @@ export default class EscenaBase extends Scene {
             crearBotones(this, nivel);
             crearPuertas(this, nivel);
             crearFinNivel(this, nivel);
+            crearAgua(this, nivel);
         });
-    }
-
-    // ---------- Helpers ----------
-    buscarCapa(nivel, identificador) {
-        return nivel.layerInstances.find((l) => l.__identifier === identificador);
     }
 
     calcularLimitesMundo(datosLDtk) {
@@ -185,9 +256,9 @@ export default class EscenaBase extends Scene {
         const cam = this.cameras.main;
 
         cam.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
-        cam.startFollow(this.carpincho, true, 0.08, 0.08);
+        cam.startFollow(this.personaje, true, 0.08, 0.08);
         cam.setFollowOffset(0, 150);
-        cam.centerOn(this.carpincho.x, this.carpincho.y - 150);
+        cam.centerOn(this.personaje.x, this.personaje.y - 150);
 
         this.teclas = this.input.keyboard.createCursorKeys();
         this.teclasWASD = this.input.keyboard.addKeys("W,A,S,D,SPACE");
@@ -195,11 +266,11 @@ export default class EscenaBase extends Scene {
 
     // ---------- Guardado ----------
     capturarEstado() {
-        if (!this.carpincho) return null;
+        if (!this.personaje) return null;
 
         return {
-            pos_x: Math.round(this.carpincho.x),
-            pos_y: Math.round(this.carpincho.y),
+            pos_x: Math.round(this.personaje.x),
+            pos_y: Math.round(this.personaje.y),
             estado_objetos: {
                 version: 1,
                 botones: this.botones.map((b) => ({ iid: b.iid, activado: b.activado })),
@@ -251,10 +322,10 @@ export default class EscenaBase extends Scene {
         this.sound.play(SONIDOS_CONTACTO.pop.clave);
     }
 
-    reaparecerCarpincho() {
+    reaparecerPersonaje() {
         const { x, y } = this.puntoRespawn;
-        this.carpincho.setPosition(x, y);
-        this.carpincho.setVelocity(0, 0);
+        this.personaje.setPosition(x, y);
+        this.personaje.setVelocity(0, 0);
         this.sound.play(SONIDOS_CONTACTO.pop.clave);
     }
 
@@ -337,16 +408,16 @@ export default class EscenaBase extends Scene {
             }
         }
 
-        // Identificar al carpincho
-        const esCarpincho = (body) =>
-            body === this.carpincho.body || body.parent === this.carpincho.body;
+        // Identificar al personaje que controla el jugador
+        const esPersonaje = (body) =>
+            body === this.personaje.body || body.parent === this.personaje.body;
 
         let objeto;
 
-        if (esCarpincho(bodyA)) {
+        if (esPersonaje(bodyA)) {
             if (bodyA.isSensor) return;
             objeto = bodyB;
-        } else if (esCarpincho(bodyB)) {
+        } else if (esPersonaje(bodyB)) {
             if (bodyB.isSensor) return;
             objeto = bodyA;
         } else {
@@ -357,7 +428,7 @@ export default class EscenaBase extends Scene {
 
         // Daño
         if (tags.includes("entidad_danio")) {
-            this.reaparecerCarpincho();
+            this.reaparecerPersonaje();
             return;
         }
 

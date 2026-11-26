@@ -17,7 +17,7 @@ function crearTexturaGota(escena) {
 }
 
 // Lee las celdas de agua (INTGRID.AGUA) de la capa "Colisiones" de cada sala.
-// Si la sala no tiene agua, no hace nada: el tutorial queda igual que antes.
+// Si la sala no tiene agua, no hace nada.
 export function crearAgua(escena, nivel) {
     const capa = buscarCapa(nivel, CAPAS.COLISIONES);
     if (!capa) return;
@@ -52,13 +52,18 @@ export function actualizarAguas(escena, tiempo, delta) {
     // Olas y dibujo de todas las aguas
     escena.aguas.forEach((a) => a.actualizar(tiempo, delta));
 
-    // El carpincho solo puede estar en una a la vez
-    const cuerpo = escena.carpincho.body;
+    const personaje = escena.personaje;
+
+    // Personajes que vuelan (benteveo) marcan ignoraAgua = true y no flotan ni se frenan
+    if (!personaje || personaje.ignoraAgua) return;
+
+    // El personaje solo puede estar en una a la vez
+    const cuerpo = personaje.body;
     const actual = escena.aguas.find((a) => a.medirSumersion(cuerpo) > 0) ?? null;
 
     // Si acaba de salir, se llama una última vez a la anterior para la salpicadura de salida
     const aplicar = actual ?? escena.aguaPrevia;
-    aplicar?.afectarCuerpo(escena.carpincho, tiempo, delta);
+    aplicar?.afectarCuerpo(personaje, tiempo, delta);
 
     escena.aguaPrevia = actual;
 }

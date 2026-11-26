@@ -1,8 +1,24 @@
+import Phaser from "phaser";
 import { CAPAS, CUERPOS_INTGRID, PROFUNDIDAD } from "../configs/constantes.js";
 import { buscarCapa } from "./utilidadesLDtk.js";
 
+// Colores de los valores del IntGrid tal como están definidos en LDtk:
+// { 1: 0x84c23a, 3: 0x625b59, ... }
+function coloresIntGrid(escena) {
+    const definicion = escena.datosLDtk.defs.layers.find(
+        (l) => l.identifier === CAPAS.COLISIONES
+    );
+
+    return Object.fromEntries(
+        (definicion?.intGridValues ?? []).map((v) => [
+            v.value,
+            Phaser.Display.Color.HexStringToColor(v.color).color,
+        ])
+    );
+}
+
 function crearBloque(escena, cx, cy, w, h, gridSize, def, offsetX = 0, offsetY = 0) {
-    const { color, borde, ...opciones } = def;
+    const { color, borde, profundidad, ...opciones } = def;
 
     const ancho = w * gridSize;
     const alto = h * gridSize;
@@ -14,7 +30,7 @@ function crearBloque(escena, cx, cy, w, h, gridSize, def, offsetX = 0, offsetY =
         const bloque = escena.add
             .rectangle(posX, posY, ancho, alto, color)
             .setStrokeStyle(1, borde ?? color)
-            .setDepth(PROFUNDIDAD.PIEDRA);
+            .setDepth(profundidad ?? PROFUNDIDAD.PIEDRA);
 
         escena.matter.add.gameObject(bloque, opciones);
     } else {
@@ -22,10 +38,14 @@ function crearBloque(escena, cx, cy, w, h, gridSize, def, offsetX = 0, offsetY =
     }
 }
 
-// Capa IntGrid "Colisiones": fusiona celdas contiguas en cuerpos estáticos
+// Capa IntGrid "Colisiones": fusiona celdas contiguas en cuerpos estáticos.
+// Si la escena tiene mostrarColoresLDtk = true, cada bloque se dibuja con el
+// color que tiene su valor en LDtk (para probar niveles antes de tener tiles).
 export function crearColisiones(escena, nivel) {
     const capa = buscarCapa(nivel, CAPAS.COLISIONES);
     if (!capa) return;
+
+    const colores = escena.mostrarColoresLDtk ? coloresIntGrid(escena) : {};
 
     const gridSize = capa.__gridSize;
     const anchoCeldas = capa.__cWid;
@@ -38,9 +58,14 @@ export function crearColisiones(escena, nivel) {
         for (let cx = 0; cx < anchoCeldas; cx++) {
             const idx = cy * anchoCeldas + cx;
             const valor = csv[idx];
-            const def = CUERPOS_INTGRID[valor];
+            const base = CUERPOS_INTGRID[valor];
 
-            if (!def || visitado[idx]) continue;
+            if (!base || visitado[idx]) continue;
+
+            // Con colores de LDtk, el bloque va detrás del personaje (que está en 0)
+            const def = colores[valor] != null
+                ? { ...base, color: colores[valor], borde: colores[valor], profundidad: PROFUNDIDAD.PASTO - 1 }
+                : base;
 
             // Extender a lo ancho
             let w = 1;
