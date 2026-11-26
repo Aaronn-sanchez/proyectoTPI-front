@@ -490,3 +490,31 @@
         margin-top: 7px;
     }
 }
+.aviso-servicios,
+.mensaje-error,
+.error-edicion {
+    display: block;
+    margin-top: 6px;
+    color: #b00020;
+    font-family: 'Radio Canada', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.rol-creado { cursor: pointer; }
+.rol-creado.rol-seleccionado { background-color: #550D84; }
+.rol-creado.rol-seleccionado p { color: white; }
+
+.btn-cerrar-rol,
+.modificar { cursor: pointer; }
+
+.form-editar-usuario {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+.form-editar-usuario input { flex: 1; min-width: 0; }
+
+.btn-guardar-rol:disabled { opacity: 0.5; cursor: not-allowed; }
