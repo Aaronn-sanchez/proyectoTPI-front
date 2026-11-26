@@ -49,7 +49,9 @@ export default function App() {
 
       <Route path="/menu" component={Menu} />
       <Route path="/niveles" component={Niveles} />
-      <Route path="/jugar/tutorial" component={Juego} />
+      <Route path="/jugar/:id">
+        {(params) => <Juego key={params.id} id={params.id} />}
+      </Route>
       <Route path="/ajustes" component={ConfiguracionesUs} />
       <Route path="/misLogros" component={Logros} />
       <Route path="/listaUsuarios" component={ListaUsers} />

@@ -8,6 +8,9 @@ import Phaser from "phaser";
  *   2. Fuerzas de flotabilidad (Arquímedes) y arrastre hidrodinámico por applyForce.
  *   3. Simulación y dibujo de la superficie de olas con resortes acoplados.
  *   4. Disparo de salpicaduras de partículas al entrar y salir.
+ *
+ * Internamente trabaja en coordenadas LOCALES de la sala (como la grilla de LDtk).
+ * offsetX / offsetY es la posición de la sala en el mundo (worldX / worldY).
  */
 export default class Agua {
     constructor(escena, opciones) {
@@ -17,13 +20,18 @@ export default class Agua {
             filas,
             tamCelda,
             valorAgua = 2,
-            profundidad = 5
+            profundidad = 5,
+            offsetX = 0,
+            offsetY = 0
         } = opciones;
 
         this.escena = escena;
         this.tam = tamCelda;
         this.columnas = columnas;
         this.filas = filas;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+
         // ---------- Parámetros de FLUIDO ----------
         this.arrastreLineal = 1.8;
         this.factorArrastreVertical = 1.5;
@@ -48,7 +56,12 @@ export default class Agua {
 
         this._construirGeometria();
 
-        this.grafico = escena.add.graphics().setDepth(profundidad);
+        // El gráfico se dibuja en local y se desplaza a la posición de la sala
+        this.grafico = escena.add
+            .graphics()
+            .setDepth(profundidad)
+            .setPosition(offsetX, offsetY);
+
         this._crearSalpicadura(profundidad + 5);
 
         this.acumulador = 0;
@@ -135,11 +148,12 @@ export default class Agua {
         this.salpicadura.emitParticleAt(x, y, cantidad);
     }
 
+    // x en coordenadas del MUNDO; devuelve la y de la superficie en el MUNDO
     alturaSuperficie(x) {
         if (!this.hayAgua) return null;
-        const i = Math.floor((x - this.xMin) / this.paso);
+        const i = Math.floor((x - this.offsetX - this.xMin) / this.paso);
         if (i < 0 || i >= this.n || !this.activo[i]) return null;
-        return this.base[i] + this.altura[i];
+        return this.base[i] + this.altura[i] + this.offsetY;
     }
 
     /**
@@ -149,10 +163,11 @@ export default class Agua {
         if (!this.hayAgua) return 0;
 
         const tam = this.tam;
-        const izq = body.bounds.min.x;
-        const der = body.bounds.max.x;
-        const arr = body.bounds.min.y;
-        const aba = body.bounds.max.y;
+        // Del mundo a coordenadas locales de la sala
+        const izq = body.bounds.min.x - this.offsetX;
+        const der = body.bounds.max.x - this.offsetX;
+        const arr = body.bounds.min.y - this.offsetY;
+        const aba = body.bounds.max.y - this.offsetY;
 
         const ancho = der - izq;
         const alto = aba - arr;
@@ -238,9 +253,10 @@ export default class Agua {
         }
     }
 
+    // x en coordenadas del MUNDO
     perturbar(x, fuerza) {
         if (!this.hayAgua) return;
-        const centro = Math.round((x - this.xMin) / this.paso);
+        const centro = Math.round((x - this.offsetX - this.xMin) / this.paso);
         for (let d = -2; d <= 2; d++) {
             const i = centro + d;
             if (i < 0 || i >= this.n || !this.activo[i]) continue;

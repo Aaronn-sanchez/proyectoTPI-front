@@ -403,6 +403,8 @@ export function iniciarCarpincho(personaje) {
             if (arriba && puedeSaltar) {
                 this.setVelocityY(this.fuerzaSalto);
                 this.ultimoSuelo = -1000;   // consumir el margen: evita un doble salto
+
+                this.emit('saltar');
             }
         }
     };

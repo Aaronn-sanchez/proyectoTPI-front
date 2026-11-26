@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { useLocation } from 'wouter';
 import { crearConfig } from '../game/config';
+import { obtenerNivel } from '../game/niveles';
 import MenuPausa from '../componentes/menuPausa/MenuPausa';
 import NivelCompletado from '../componentes/Nivel_Completado/NivelCompletado';
 import PantallaCarga from './pantallaCarga/pantallaCarga';
@@ -17,13 +18,16 @@ const MIN_CARGA_MS = 1500;
 // Si el nivel no termina de cargar en este tiempo, se muestra el error
 const TIMEOUT_CARGA_MS = 30000;
 
-export default function Juego() {
+// "id" llega desde la ruta /jugar/:id (ver App.jsx)
+export default function Juego({ id }) {
+    const idNivel = Number(id);
+    const nivel = obtenerNivel(idNivel);
+
     const contenedor = useRef(null);
     const juego = useRef(null);
     const inicioCarga = useRef(Date.now());
 
     const [pausado, setPausado] = useState(false);
-    const [panelQAAbierto, setPanelQAAbierto] = useState(false);
     const [autorizado, setAutorizado] = useState(false);
     const [fin, setFin] = useState(null);
     const [listo, setListo] = useState(false);        // el nivel terminó de cargar
@@ -33,11 +37,18 @@ export default function Juego() {
     const [guardadoSeleccionado, setGuardadoSeleccionado] = useState(null);
     const [reinicio, setReinicio] = useState(0);
 
+    // Si el id no corresponde a un nivel jugable, vuelve al mapa
+    useEffect(() => {
+        if (!nivel) setLocation('/niveles');
+    }, [nivel, setLocation]);
+
     // La API valida que el nivel esté desbloqueado para este usuario
-    useEffect(() => { 
+    useEffect(() => {
+        if (!nivel) return;
+
         let cancelado = false;
 
-        iniciarNivel(ID_NIVEL)
+        iniciarNivel(idNivel)
             .then(() => {
                 if (!cancelado) setAutorizado(true);
             })
@@ -48,12 +59,11 @@ export default function Juego() {
         return () => {
             cancelado = true;
         };
-    }, [setLocation]);
-
+    }, [nivel, idNivel, setLocation]);
 
     // El juego se crea recién cuando la API da el OK
     useEffect(() => {
-        if (!autorizado || juego.current) return;
+        if (!nivel || !autorizado || juego.current) return;
 
         let cancelado = false;
         let temporizadorListo;
@@ -65,9 +75,8 @@ export default function Juego() {
 
             if (!guardado) {
                 try {
-                    const respuesta = await obtenerUltimoGuardado(ID_NIVEL);
+                    const respuesta = await obtenerUltimoGuardado(idNivel);
                     guardado = respuesta.guardado;
-                    console.log('Último guardado encontrado:', guardado);
                 } catch (error) {
                     console.error('No se pudo consultar el último guardado:', error);
                 }
@@ -76,7 +85,7 @@ export default function Juego() {
             if (cancelado) return;
 
             juego.current = new Phaser.Game(
-                crearConfig(contenedor.current, guardado)
+                crearConfig(contenedor.current, nivel, guardado)
             );
 
             const game = juego.current;
@@ -106,6 +115,7 @@ export default function Juego() {
 
             game.events.on('nivel-listo', alTerminar);
             game.events.on('nivel-error-carga', alFallar);
+            game.events.on('nivel-completado', guardarFin);
         }
 
         prepararJuego();
@@ -119,42 +129,32 @@ export default function Juego() {
             juego.current?.destroy(true);
             juego.current = null;
         };
-    }, [autorizado, reinicio, guardadoSeleccionado]);
+    }, [nivel, autorizado, reinicio, guardadoSeleccionado]);
 
     // Guarda el nivel como completado en la API
     async function guardarFin() {
         setFin('guardando');
 
         try {
-            await completarNivel(ID_NIVEL);
+            await completarNivel(idNivel);
             setFin('ok');
         } catch {
             setFin('error');
         }
     }
 
-    // La escena avisa con un evento cuando el carpincho toca el final
-    useEffect(() => {
-        if (!autorizado || !juego.current) return;
-
-        const game = juego.current;
-        game.events.on('nivel-completado', guardarFin);
-
-        return () => {
-            game.events.off('nivel-completado', guardarFin);
-        };
-    }, [autorizado]);
-
     // Pausa o reanuda la escena de Phaser
     useEffect(() => {
-        if (!juego.current) return;
+        if (!nivel || !juego.current) return;
+
+        const manager = juego.current.scene;
 
         if (pausado || fin) {
-            juego.current.scene.pause('tutorialBasico');
+            if (manager.isActive(nivel.clave)) manager.pause(nivel.clave);
         } else {
-            juego.current.scene.resume('tutorialBasico');
+            if (manager.isPaused(nivel.clave)) manager.resume(nivel.clave);
         }
-    }, [pausado, fin, autorizado]);
+    }, [nivel, pausado, fin, autorizado]);
 
     // Escape abre y cierra el menú de pausa (no mientras está cargando)
     useEffect(() => {
