@@ -1607,7 +1607,7 @@
 						},
 						{
 							"__identifier": "Spawn_benteveo",
-							"__grid": [9,13],
+							"__grid": [4,33],
 							"__pivot": [0.5,0.5],
 							"__tags": ["entidad_jugable"],
 							"__tile": { "tilesetUid": 27, "x": 0, "y": 0, "w": 240, "h": 416 },
@@ -1616,10 +1616,10 @@
 							"width": 101,
 							"height": 116,
 							"defUid": 26,
-							"px": [150,209],
+							"px": [72,532],
 							"fieldInstances": [],
-							"__worldX": 2165,
-							"__worldY": 1107
+							"__worldX": 2087,
+							"__worldY": 1430
 						}
 					]
 				},
