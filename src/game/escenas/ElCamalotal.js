@@ -21,10 +21,12 @@ export default class ElCamalotal extends EscenaBase {
     }
 
     cargarAssetsExtra() {
-        this.load.image("benteveo", "/assets/sprites/benteveo/frame1.png");
-
-        // Cuando tengas el arte de la nube, descomentá esta línea: crearNubes() la usa sola.
-        // this.load.image("nube", "/assets/sprites/escenario/nube.png");
+        for (let i = 1; i <= 5; i++) {
+            this.load.image(
+                `benteveo_${i}`,
+                `/assets/sprites/benteveo/frame%20${i}.png`
+            );
+        }
     }
 
     crearPersonaje(nivel) {

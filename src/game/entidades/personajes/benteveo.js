@@ -7,7 +7,7 @@ import Phaser from "phaser";
 // Todos los números de jugabilidad están acá arriba para ajustarlos.
 // Las unidades son las de Matter: px por paso de física (~16.7 ms).
 // ==========================================================
-const TAM = 64;               // celda (px) del sprite normalizado
+const TAM = 78;               // celda (px) del sprite normalizado
 const ANCHO_CUERPO = 40;      // hitbox
 const ALTO_CUERPO = 28;
 
@@ -28,21 +28,33 @@ const AVANCE_AUTOMATICO = 0;  // > 0: avanza solo a esa velocidad (floppy bird p
 // Llamar UNA vez en crearPersonaje(), antes de crear al benteveo.
 // ==========================================================
 export function prepararFramesBenteveo(scene) {
-    const clave = "bv_benteveo";
-    if (scene.textures.exists(clave)) return;
+    for (let i = 1; i <= 5; i++) {
+        const clave = `bv_benteveo_${i}`;
 
-    const img = scene.textures.get("benteveo").getSourceImage();
-    const escala = Math.min(TAM / img.width, TAM / img.height);
-    const w = Math.round(img.width * escala);
-    const h = Math.round(img.height * escala);
+        if (scene.textures.exists(clave)) continue;
 
-    const lienzo = scene.textures.createCanvas(clave, TAM, TAM);
-    const ctx = lienzo.getContext();
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(img, Math.round((TAM - w) / 2), Math.round((TAM - h) / 2), w, h);
-    lienzo.refresh();
+        const img = scene.textures.get(`benteveo_${i}`).getSourceImage();
+
+        const escala = Math.min(TAM / img.width, TAM / img.height);
+        const w = Math.round(img.width * escala);
+        const h = Math.round(img.height * escala);
+
+        const lienzo = scene.textures.createCanvas(clave, TAM, TAM);
+        const ctx = lienzo.getContext();
+
+        ctx.imageSmoothingQuality = "high";
+
+        ctx.drawImage(
+            img,
+            Math.round((TAM - w) / 2),
+            Math.round((TAM - h) / 2),
+            w,
+            h
+        );
+
+        lienzo.refresh();
+    }
 }
-
 // ==========================================================
 // INICIO (se le pasa a wachin como iniciarEntidad)
 // ==========================================================
@@ -53,7 +65,24 @@ export function iniciarBenteveo(personaje) {
     // Vuela: el agua no lo flota ni lo frena (ver sistemas/agua.js)
     personaje.ignoraAgua = true;
 
-    personaje.setTexture("bv_benteveo");
+    personaje.setTexture("bv_benteveo_1");
+
+    if (!personaje.scene.anims.exists("vuelo_benteveo")) {
+        personaje.scene.anims.create({
+            key: "vuelo_benteveo",
+            frames: [
+                { key: "bv_benteveo_1" },
+                { key: "bv_benteveo_2" },
+                { key: "bv_benteveo_3" },
+                { key: "bv_benteveo_4" },
+                { key: "bv_benteveo_5" },
+            ],
+            frameRate: 8,
+            repeat: -1,
+        });
+    }
+
+    personaje.play("vuelo_benteveo");
 
     const cuerpo = Matter.Bodies.rectangle(x, y, ANCHO_CUERPO, ALTO_CUERPO, {
         friction: 0,

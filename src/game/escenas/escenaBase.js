@@ -6,6 +6,7 @@ import {
     CAPAS,
     CAPAS_VISUALES,
 } from "../configs/constantes.js";
+
 import { buscarCapa } from "../sistemas/utilidadesLDtk.js";
 import { crearCapasVisuales } from "../sistemas/capasVisuales.js";
 import { crearColisiones } from "../sistemas/colisiones.js";
@@ -17,6 +18,7 @@ import { crearBotones } from "../sistemas/botones.js";
 import { crearPuertas } from "../sistemas/puertas.js";
 import { crearFinNivel } from "../sistemas/finNivel.js";
 import { crearAgua, actualizarAguas } from "../sistemas/agua.js";
+import { crearNubes } from "../sistemas/nubes.js";
 
 import wachin from "../entidades/clases/wachin.js";
 import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/personajes/carpincho.js";
@@ -202,6 +204,7 @@ export default class EscenaBase extends Scene {
             crearPuertas(this, nivel);
             crearFinNivel(this, nivel);
             crearAgua(this, nivel);
+            crearNubes(this, nivel);
         });
     }
 
