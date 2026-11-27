@@ -1,0 +1,21 @@
+.btn-volver {
+    display: block;
+    margin: 0 auto;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #E7E7E9;
+    color: #646DCF;
+    font-family: "Potta One", system-ui;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-volver:hover {
+    filter: brightness(0.95);
+}
+
+.btn-volver:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}

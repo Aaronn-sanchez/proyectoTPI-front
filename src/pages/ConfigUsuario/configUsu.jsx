@@ -1,21 +1,81 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './configUsu.css';
+import '../../componentes/btn-volver.css';
 import Layout from '../../componentes/Layout';
-import Caja from '../../componentes/Caja'
-
-// Datos de ejemplo (después vendrán del backend)
-const PERFILES = [
-    { id: 1, nombre: 'Para estar en casa' },
-    { id: 2, nombre: 'Solo' },
-];
+import Caja from '../../componentes/Caja';
+import {
+    obtenerConfiguracion,
+    actualizarConfiguracion,
+    crearPerfil,
+    aplicarPerfil,
+    borrarPerfil,
+} from '../../api/configuracion';
 
 export default function ConfigUsuario() {
-    const [volumen, setVolumen] = useState(75);
-    const [perfilSeleccionado, setPerfilSeleccionado] = useState(null);
 
-    // Si tocás el que ya está elegido, se deselecciona y la X desaparece
-    function elegirPerfil(id) {
-        setPerfilSeleccionado(perfilSeleccionado === id ? null : id);
+    const [volumen, setVolumen] = useState(100);
+    const [idioma, setIdioma] = useState(0);
+    const [perfiles, setPerfiles] = useState([]);
+    const [maxPerfiles, setMaxPerfiles] = useState(3);
+
+    const [perfilSeleccionado, setPerfilSeleccionado] = useState(null);
+    const [nuevoNombre, setNuevoNombre] = useState('');
+    const [error, setError] = useState('');
+
+    function mostrar(datos) {
+        setVolumen(datos.configuracion.volumen_musica);
+        setIdioma(datos.configuracion.idioma);
+        setPerfiles(datos.perfiles);
+        setMaxPerfiles(datos.maxPerfiles);
+        setError('');
+    }
+
+    async function ejecutar(accion) {
+        try {
+            mostrar(await accion());
+        } catch (e) {
+            setError(e.message);
+        }
+    }
+
+    useEffect(() => {
+        ejecutar(obtenerConfiguracion);
+    }, []);
+
+    function guardarVolumen() {
+        ejecutar(() => actualizarConfiguracion({ volumen_musica: volumen }));
+    }
+
+    function elegirIdioma(valor) {
+        ejecutar(() => actualizarConfiguracion({ idioma: valor }));
+    }
+
+    function elegirPerfil(perfil) {
+        // Tocar el que ya está elegido solo esconde la X
+        if (perfilSeleccionado === perfil.id_perfil) {
+            setPerfilSeleccionado(null);
+            return;
+        }
+        setPerfilSeleccionado(perfil.id_perfil);
+        ejecutar(() => aplicarPerfil(perfil.id_perfil));
+    }
+
+    async function anadirPerfil(e) {
+        e.preventDefault();
+        const nombre = nuevoNombre.trim();
+        if (!nombre) return;
+
+        try {
+            mostrar(await crearPerfil(nombre));
+            setNuevoNombre('');
+        } catch (err) {
+            setError(err.message);
+        }
+    }
+
+    async function eliminarPerfil(id) {
+        await ejecutar(() => borrarPerfil(id));
+        setPerfilSeleccionado(null);
     }
 
     return (
@@ -23,6 +83,8 @@ export default function ConfigUsuario() {
             <Caja>
                 <main className="contenedor-ajustes">
                     <h1>Ajustes</h1>
+
+                    {error && <p className="ajustes-error">{error}</p>}
 
                     <section className="seccion-ajuste">
                         <h2>Musica</h2>
@@ -33,6 +95,8 @@ export default function ConfigUsuario() {
                             max="100"
                             value={volumen}
                             onChange={(e) => setVolumen(Number(e.target.value))}
+                            onPointerUp={guardarVolumen}
+                            onKeyUp={guardarVolumen}
                             style={{ '--valor': volumen }}
                             aria-label="Volumen de la música"
                         />
@@ -41,35 +105,47 @@ export default function ConfigUsuario() {
                     <section className="seccion-ajuste">
                         <h2>Idioma/Language</h2>
                         <div className="contenedor-idiomas">
-                            <button type="button" className="btn-idioma">Español</button>
-                            <button type="button" className="btn-idioma">English</button>
+                            <button
+                                type="button"
+                                className={`btn-idioma ${idioma === 0 ? 'btn-idioma--activo' : ''}`}
+                                onClick={() => elegirIdioma(0)}
+                            >
+                                Español
+                            </button>
+                            <button
+                                type="button"
+                                className={`btn-idioma ${idioma === 1 ? 'btn-idioma--activo' : ''}`}
+                                onClick={() => elegirIdioma(1)}
+                            >
+                                English
+                            </button>
                         </div>
                     </section>
 
                     <section className="seccion-ajuste">
                         <h2>Mis tipos de configuraciones</h2>
-                        <p className="subtitulo-perfiles">Añadi hasta 3 perfiles de configuracion</p>
+                        <p className="subtitulo-perfiles">Añadi hasta {maxPerfiles} perfiles de configuracion</p>
 
-                        {PERFILES.map((perfil) => {
-                            const elegido = perfilSeleccionado === perfil.id;
+                        {perfiles.map((perfil) => {
+                            const elegido = perfilSeleccionado === perfil.id_perfil;
 
                             return (
-                                <div className="fila-perfil" key={perfil.id}>
+                                <div className="fila-perfil" key={perfil.id_perfil}>
                                     <button
                                         type="button"
                                         className={`btn-perfil ${elegido ? 'perfil-seleccionado' : ''}`}
-                                        onClick={() => elegirPerfil(perfil.id)}
+                                        onClick={() => elegirPerfil(perfil)}
                                         aria-pressed={elegido}
                                     >
                                         {perfil.nombre}
                                     </button>
 
-                                    {/* La X solo existe mientras el perfil está elegido */}
                                     {elegido && (
                                         <button
                                             type="button"
                                             className="btn-cerrar-perfil"
                                             aria-label={`Borrar perfil ${perfil.nombre}`}
+                                            onClick={() => eliminarPerfil(perfil.id_perfil)}
                                         >
                                             ✕
                                         </button>
@@ -78,18 +154,22 @@ export default function ConfigUsuario() {
                             );
                         })}
 
-                        <form className="fila-perfil" onSubmit={(e) => e.preventDefault()}>
-                            <input
-                                type="text"
-                                className="input-perfil"
-                                placeholder="Añadir +"
-                                maxLength={30}
-                            />
-                            <button type="submit" className="btn-guardar-perfil">Guardar</button>
-                        </form>
+                        {perfiles.length < maxPerfiles && (
+                            <form className="fila-perfil" onSubmit={anadirPerfil}>
+                                <input
+                                    type="text"
+                                    className="input-perfil"
+                                    placeholder="Añadir +"
+                                    maxLength={30}
+                                    value={nuevoNombre}
+                                    onChange={(e) => setNuevoNombre(e.target.value)}
+                                />
+                                <button type="submit" className="btn-guardar-perfil">Guardar</button>
+                            </form>
+                        )}
                     </section>
 
-                    <button className="btn-azul btn-atras" onClick={() => window.history.back()}>← Atras</button>
+                    <button className="btn-azul btn-atras btn-volver" onClick={() => window.history.back()}>← Atras</button>
                 </main>
             </Caja>
         </Layout>

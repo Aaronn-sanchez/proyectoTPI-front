@@ -1,6 +1,7 @@
 import Layout from "../../componentes/Layout";
 import CajaMenu from "../../componentes/Caja";
-import './list_user.css'
+import './list_user.css';
+import '../../componentes/btn-volver.css';
 
 export default function ListaUsers() {
 
@@ -106,7 +107,8 @@ export default function ListaUsers() {
 
                 </div>
 
-                <button className="btn-azul btn-atras" onClick={() => window.history.back()}>← Atras</button>
+
+                <button className="btn-volver btn-atras-usuarios" onClick={() => window.history.back()}>← Atras</button>
             </CajaMenu>
         </Layout>
     );

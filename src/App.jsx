@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Route, Switch, Redirect, useLocation } from 'wouter';
 
 import Menu from './pages/C_Menu/menu.jsx';
@@ -10,41 +11,34 @@ import Logros from './pages/Logros/logros.jsx';
 import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
 import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
 
-import { useState, useEffect } from 'react';
 import { obtenerPerfil } from './api/auth';
-
-const RUTAS_PRIVADAS = [
-  '/menu',
-  '/niveles',
-  '/jugar/tutorial',
-  '/ajustes',
-  '/misLogros',
-  '/listaUsuarios',
-  '/cargando',
-];
 
 const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
-  const [ubicacion] = useLocation();
+  const [ubicacion, setLocation] = useLocation();
   const token = localStorage.getItem('token');
 
-  const esPrivada = RUTAS_PRIVADAS.includes(ubicacion);
   const esPublica = RUTAS_PUBLICAS.includes(ubicacion);
 
   const [validando, setValidando] = useState(Boolean(token));
 
+  // Al abrir la app, comprueba que el token guardado siga siendo válido
   useEffect(() => {
     if (!token) return;
 
     obtenerPerfil()
-      .catch(() => { })
+      .catch(() => {
+        // Token vencido o inválido: se borra y se vuelve al login
+        localStorage.removeItem('token');
+        setLocation('/');
+      })
       .finally(() => setValidando(false));
   }, []);
 
   if (validando) return null;
 
-  if (!token && esPrivada) return <Redirect to="/" />;
+  if (!token && !esPublica) return <Redirect to="/" />;
   if (token && esPublica) return <Redirect to="/menu" />;
 
   return (
@@ -53,12 +47,14 @@ export default function App() {
       <Route path="/login" component={Login} />
       <Route path="/registro" component={Registro} />
 
-      <Route path="/misLogros" component={Logros} />
-      <Route path="/listaUsuarios" component={ListaUsers} />
       <Route path="/menu" component={Menu} />
       <Route path="/niveles" component={Niveles} />
-      <Route path="/jugar/tutorial" component={Juego} />
+      <Route path="/jugar/:id">
+        {(params) => <Juego key={params.id} id={params.id} />}
+      </Route>
       <Route path="/ajustes" component={ConfiguracionesUs} />
+      <Route path="/misLogros" component={Logros} />
+      <Route path="/listaUsuarios" component={ListaUsers} />
       <Route path="/cargando" component={PantallaCarga} />
 
       <Route>Página no encontrada</Route>
