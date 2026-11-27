@@ -23,6 +23,8 @@ import { crearNubes } from "../sistemas/nubes.js";
 import wachin from "../entidades/clases/wachin.js";
 import { iniciarCarpincho, prepararFramesCarpincho } from "../entidades/personajes/carpincho.js";
 
+import { registrarProgreso } from "../../api/logros.js";
+
 export default class EscenaBase extends Scene {
     constructor(clave, claveJson, idNivelLDtk, rutaJson) {
         super(clave);
@@ -105,6 +107,7 @@ export default class EscenaBase extends Scene {
         this.aplicarEstadoObjetos();
         this.crearFondo();
         this.crearPersonaje(this.nivel);   // gancho: cada nivel elige personaje
+        this.configurarEventosLogros();
 
         this.crearDeteccionContactos();
         this.crearCamaraYControles(limites);
@@ -133,6 +136,23 @@ export default class EscenaBase extends Scene {
     cargarAssetsExtra() { }
     alCrear() { }
     alActualizar(tiempo, delta) { }
+
+    configurarEventosLogros() {
+        this.personaje.on("saltar", async () => {
+            try {
+                const resultado = await registrarProgreso("SALTAMONTES", 1);
+
+                if (resultado.nuevo) {
+                    console.log("¡Logro desbloqueado!", resultado.logro);
+                } else {
+                    console.log("Progreso Saltamontes:", resultado.progreso);
+                }
+
+            } catch (error) {
+                console.error("Error al registrar el logro:", error);
+            }
+        });
+    }
 
     obtenerCapasVisuales() { return CAPAS_VISUALES; }
 
