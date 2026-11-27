@@ -5,11 +5,31 @@ import './PanelQA.css';
 // Ejemplo: después vendrán de la partida
 const CHECKPOINTS = [1, 2, 3, 4];
 
-export default function PanelQA({ onCerrar }) {
-    // Estos estados son solo visuales (pintan la barra y la bandera elegida)
-    const [gravedad, setGravedad] = useState(50);
-    const [velocidad, setVelocidad] = useState(55);
+// 50 = valor normal del juego. 0 = mínimo, 100 = el doble.
+const VALOR_NORMAL = 50;
+
+export default function PanelQA({ ajustes, onCambiarAjustes, onCerrar }) {
+    // El valor real vive en la escena de Phaser; acá solo se arranca desde él
+    // para que al reabrir el panel los sliders sigan donde los dejaste.
+    const [gravedad, setGravedad] = useState(ajustes?.gravedad ?? VALOR_NORMAL);
+    const [velocidad, setVelocidad] = useState(ajustes?.velocidad ?? VALOR_NORMAL);
     const [checkpoint, setCheckpoint] = useState(1);
+
+    function cambiarGravedad(valor) {
+        setGravedad(valor);
+        onCambiarAjustes?.({ gravedad: valor });
+    }
+
+    function cambiarVelocidad(valor) {
+        setVelocidad(valor);
+        onCambiarAjustes?.({ velocidad: valor });
+    }
+
+    function restablecer() {
+        setGravedad(VALOR_NORMAL);
+        setVelocidad(VALOR_NORMAL);
+        onCambiarAjustes?.({ gravedad: VALOR_NORMAL, velocidad: VALOR_NORMAL });
+    }
 
     return (
         <div className="panel-qa-fondo" role="dialog" aria-modal="true" aria-label="Panel de QA Tester">
@@ -34,7 +54,7 @@ export default function PanelQA({ onCerrar }) {
                                     min="0"
                                     max="100"
                                     value={gravedad}
-                                    onChange={(e) => setGravedad(Number(e.target.value))}
+                                    onChange={(e) => cambiarGravedad(Number(e.target.value))}
                                     style={{ '--valor': gravedad }}
                                 />
                             </label>
@@ -47,11 +67,15 @@ export default function PanelQA({ onCerrar }) {
                                     min="0"
                                     max="100"
                                     value={velocidad}
-                                    onChange={(e) => setVelocidad(Number(e.target.value))}
+                                    onChange={(e) => cambiarVelocidad(Number(e.target.value))}
                                     style={{ '--valor': velocidad }}
                                 />
                             </label>
                         </div>
+
+                        <button type="button" className="qa-ir" onClick={restablecer}>
+                            Restablecer
+                        </button>
 
                         {/* Interruptor ON/OFF: lo resuelve el CSS, no necesita estado */}
                         <label className="qa-interruptor">

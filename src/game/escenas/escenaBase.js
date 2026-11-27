@@ -5,7 +5,11 @@ import {
     PROFUNDIDAD,
     CAPAS,
     CAPAS_VISUALES,
+    GRAVEDAD_BASE,
+    VALOR_QA_NORMAL,
 } from "../configs/constantes.js";
+
+
 
 import { buscarCapa } from "../sistemas/utilidadesLDtk.js";
 import { crearCapasVisuales } from "../sistemas/capasVisuales.js";
@@ -105,6 +109,7 @@ export default class EscenaBase extends Scene {
         this.aplicarEstadoObjetos();
         this.crearFondo();
         this.crearPersonaje(this.nivel);   // gancho: cada nivel elige personaje
+        this.iniciarAjustesQA();           // gravedad y velocidad del panel QA
 
         this.crearDeteccionContactos();
         this.crearCamaraYControles(limites);
@@ -267,6 +272,22 @@ export default class EscenaBase extends Scene {
         this.teclasWASD = this.input.keyboard.addKeys("W,A,S,D,SPACE");
     }
 
+    // ---------- Ajustes del panel QA ----------
+    iniciarAjustesQA() {
+        this.ajustesQA = { gravedad: VALOR_QA_NORMAL, velocidad: VALOR_QA_NORMAL };
+        this.aplicarAjustesQA();
+    }
+    aplicarAjustesQA(cambios = {}) {
+        console.log('escena recibió:', cambios, 'personaje:', Boolean(this.personaje));
+        this.ajustesQA = { ...this.ajustesQA, ...cambios };
+        const { gravedad, velocidad } = this.ajustesQA;
+
+        this.matter.world.setGravity(0, GRAVEDAD_BASE * (gravedad / VALOR_QA_NORMAL));
+
+        if (this.personaje) {
+            this.personaje.factorVelocidad = Math.max(0.1, velocidad / VALOR_QA_NORMAL);
+        }
+    }
     // ---------- Guardado ----------
     capturarEstado() {
         if (!this.personaje) return null;

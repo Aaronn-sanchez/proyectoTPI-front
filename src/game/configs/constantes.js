@@ -55,3 +55,5 @@ export const SONIDOS_CONTACTO = {
         archivo: "/assets/audio/pop_up.mp3"
     }
 };
+export const GRAVEDAD_BASE = 1.2;
+export const VALOR_QA_NORMAL = 50;
