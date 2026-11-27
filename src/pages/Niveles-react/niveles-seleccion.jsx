@@ -1,8 +1,8 @@
-
 import './niveles-select.css';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { obtenerProgreso } from '../../api/niveles';
+import { obtenerNivel } from '../../game/niveles';
 import candado from '../../imagenes-react/Candadito.svg';
 import basic from '../../imagenes-react/tutorial-img.svg';
 import nivel2 from '../../imagenes-react/nivel2-img.svg';
@@ -18,8 +18,7 @@ const NIVELES = [
     { id: 4, img: nivel5, clase: 'nivel-5', alt: 'Nivel 5' },
 ];
 
-// Un nivel es jugable si tiene escena registrada en game/niveles.js
-const esJugable = (id) => Boolean(JUGABLES[id]);
+const esJugable = (id) => Boolean(obtenerNivel(id));
 const rutaDe = (id) => `/jugar/${id}`;
 
 export default function Niveles() {
@@ -38,7 +37,9 @@ export default function Niveles() {
     const estaBloqueado = (id) =>
         !progreso?.niveles.find((n) => n.id_nivel === id)?.desbloqueado;
 
-    const rutaJugar = NIVELES.find((n) => n.id === progreso?.nivelActual)?.ruta ?? null;
+    const rutaJugar = esJugable(progreso?.nivelActual)
+        ? rutaDe(progreso.nivelActual)
+        : null;
 
     return (
         <main className="niveles-container">
@@ -129,8 +130,8 @@ export default function Niveles() {
                         </div>
                     );
 
-                    return !bloqueado && ruta
-                        ? <Link key={id} href={ruta}>{icono}</Link>
+                    return !bloqueado && esJugable(id)
+                        ? <Link key={id} href={rutaDe(id)}>{icono}</Link>
                         : <div key={id}>{icono}</div>;
                 })}
             </div>
