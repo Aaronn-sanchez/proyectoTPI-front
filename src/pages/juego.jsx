@@ -233,16 +233,18 @@ export default function Juego({ id }) {
                 />
             )}
 
-            {pausado && !fin && (
-                <MenuPausa
-                    idNivel={idNivel}
-                    obtenerEstado={() => juego.current?.scene.getScene(nivel.clave)?.capturarEstado()}
-                    onSeleccionar={cargarGuardado}
-                    onContinuar={() => setPausado(false)}
-                    onAjustes={() => setLocation('/ajustes')}
-                    onSalir={() => setLocation('/niveles')}
-                />
-            )}
+  {pausado && !fin && (
+    <MenuPausa
+        idNivel={idNivel}
+        obtenerEstado={() => juego.current?.scene.getScene(nivel.clave)?.capturarEstado()}
+        obtenerEscena={() => juego.current?.scene.getScene(nivel.clave)}
+        onSeleccionar={cargarGuardado}
+        onContinuar={() => setPausado(false)}
+        onAjustes={() => setLocation('/ajustes')}
+        onSalir={() => setLocation('/niveles')}
+    />
+)}
+              
 
             {fin && (
                 <NivelCompletado

@@ -7,6 +7,7 @@ import {
     CAPAS_VISUALES,
     GRAVEDAD_BASE,
     VALOR_QA_NORMAL,
+    VELOCIDAD_FANTASMA,
 } from "../configs/constantes.js";
 
 
@@ -46,7 +47,8 @@ export default class EscenaBase extends Scene {
         this.aguaPrevia = null;
         this.personaje = null;      // el personaje que controla el jugador en este nivel
         this.puntoRespawn = null;
-        this.qa = { gravedad: 50, velocidad: 50, atravesar: false }; // 50 = valor normal
+        this.limitesMundo = null;
+        this.estadoFantasma = null; // null = modo fantasma apagado
     }
 
     // ---------- Carga de assets: lo común vive acá ----------
@@ -104,12 +106,14 @@ export default class EscenaBase extends Scene {
             this.datosLDtk.levels[0];
 
         const limites = this.calcularLimitesMundo(this.datosLDtk);
+        this.limitesMundo = limites;   // lo usa el modo fantasma para no salirse del mundo
         this.matter.world.setBounds(limites.x, limites.y, limites.ancho, limites.alto);
 
         this.crearMundo(this.datosLDtk);
         this.aplicarEstadoObjetos();
         this.crearFondo();
         this.crearPersonaje(this.nivel);   // gancho: cada nivel elige personaje
+        this.iniciarAjustesQA();           // gravedad, velocidad y modo fantasma del panel QA
 
         this.crearDeteccionContactos();
         this.crearCamaraYControles(limites);
@@ -120,30 +124,25 @@ export default class EscenaBase extends Scene {
             this.input.keyboard.enableGlobalCapture();
         });
 
-        this.alCrear();
-        this.configurarQA();                    
+        this.alCrear();                    
         this.game.events.emit("nivel-listo");
     }
 
     update(tiempo, delta) {
         if (!this.personaje) return;
 
-        // El agua va ANTES de mover: aplica flotabilidad y arrastre
         actualizarAguas(this, tiempo, delta);
 
         this.moverPersonaje(delta);
         this.alActualizar(tiempo, delta);
     }
 
-    // ---------- Ganchos (se sobreescriben por nivel) ----------
     cargarAssetsExtra() { }
     alCrear() { }
     alActualizar(tiempo, delta) { }
 
     obtenerCapasVisuales() { return CAPAS_VISUALES; }
 
-    // Por defecto el personaje es el carpincho. Un nivel con otro personaje
-    // sobreescribe este método y deja el resultado en this.personaje.
     crearPersonaje(nivel) {
         const { x, y } = this.calcularInicio(nivel, "Spawn_carpincho");
 
@@ -153,18 +152,16 @@ export default class EscenaBase extends Scene {
         this.personaje.setDepth(PROFUNDIDAD.CARPINCHO);
     }
 
-    // Por defecto: mover + adaptación a pendientes del carpincho.
-    // Un personaje distinto (benteveo) sobreescribe este método.
-  moverPersonaje(delta) {
-    this.personaje.mover(this.teclas, this.teclasWASD, delta);
-    this.personaje.adaptarSueloCarpincho?.(delta);
+    moverPersonaje(delta) {
+        if (this.ajustesQA?.fantasma) {
+            this.moverFantasma();
+            return;
+        }
 
-    if (this.qa.atravesar && this.personaje.adaptarSueloCarpincho) this.volarQA();
-}
+        this.personaje.mover(this.teclas, this.teclasWASD, delta);
+        this.personaje.adaptarSueloCarpincho?.(delta);
+    }
 
-    // Posición inicial: la del guardado si existe; si no, la entidad de spawn
-    // de LDtk (por su identificador); si tampoco hay, un valor por defecto.
-    // También deja fijado el primer punto de reaparición.
     calcularInicio(nivel, identificadorSpawn) {
         const capaEntidades = buscarCapa(nivel, CAPAS.ENTIDADES);
 
@@ -199,7 +196,6 @@ export default class EscenaBase extends Scene {
         return { x, y };
     }
 
-    // ---------- Mundo ----------
     crearMundo(datosLDtk) {
         datosLDtk.levels.forEach((nivel) => {
             crearCapasVisuales(this, nivel, this.obtenerCapasVisuales());
@@ -225,13 +221,11 @@ export default class EscenaBase extends Scene {
         return { x, y, ancho: derecha - x, alto: abajo - y };
     }
 
-    // ---------- Fondo del cielo ----------
     crearFondo() {
         const imagenCielo = this.textures.get("cielo").getSourceImage();
         const anchoImg = imagenCielo.width;
         const altoImg = imagenCielo.height;
 
-        // Textura espejada (original + copia volteada) para que no se vea costura.
         if (!this.textures.exists("cielo_espejo")) {
             const lienzo = this.textures.createCanvas("cielo_espejo", anchoImg * 2, altoImg);
             const ctx = lienzo.getContext();
@@ -262,8 +256,6 @@ export default class EscenaBase extends Scene {
         }
     }
 
-    
-    // ---------- Cámara y controles ----------
     crearCamaraYControles(limites) {
         const cam = this.cameras.main;
 
@@ -276,62 +268,87 @@ export default class EscenaBase extends Scene {
         this.teclasWASD = this.input.keyboard.addKeys("W,A,S,D,SPACE");
     }
 
-  // ---------- Panel QA ----------
-configurarQA() {
-    const mundo = this.matter.world;
-    this.gravedadBase = mundo.engine.gravity.y;
-    this.velocidadBase = this.personaje.velocidadTierra; // el benteveo no tiene
+    iniciarAjustesQA() {
+        this.ajustesQA = {
+            gravedad: VALOR_QA_NORMAL,
+            velocidad: VALOR_QA_NORMAL,
+            fantasma: false,
+        };
+        this.estadoFantasma = null;
+        this.aplicarAjustesQA();
+    }
 
-    // Con "atravesar" activo, se desactivan las colisiones con sólidos estáticos
-    // (suelo, rocas, troncos, puertas). Los sensores y los bordes del mundo siguen igual.
-    const ignorarSolidos = (evento) => {
-        if (!this.qa.atravesar) return;
+    aplicarAjustesQA(cambios = {}) {
+        console.log('[3] escena recibió:', cambios, '| personaje:', Boolean(this.personaje));
+        this.ajustesQA = { ...this.ajustesQA, ...cambios };
+        const { gravedad, velocidad, fantasma } = this.ajustesQA;
 
-        const cuerpo = this.personaje.body;
-        const esPropio = (b) => b === cuerpo || b.parent === cuerpo;
-        const bordes = Object.values(mundo.walls ?? {});
+        this.matter.world.setGravity(0, GRAVEDAD_BASE * (gravedad / VALOR_QA_NORMAL));
 
-        for (const par of evento.pairs) {
-            let otro;
-            if (esPropio(par.bodyA)) otro = par.bodyB;
-            else if (esPropio(par.bodyB)) otro = par.bodyA;
-            else continue;
-
-            const raiz = otro.parent ?? otro;
-            if (raiz.isStatic && !raiz.isSensor && !otro.isSensor && !bordes.includes(otro)) {
-                par.isActive = false;   // Matter no resuelve este choque
-            }
+        if (this.personaje) {
+            this.personaje.factorVelocidad = Math.max(0.1, velocidad / VALOR_QA_NORMAL);
+            this.personaje.factorGravedad = gravedad / VALOR_QA_NORMAL; 
         }
-    };
 
-    mundo.on("collisionstart", ignorarSolidos);
-    mundo.on("collisionactive", ignorarSolidos);
-}
-
-aplicarAjustesQA(cambios) {
-    Object.assign(this.qa, cambios);
-    const { gravedad, velocidad, atravesar } = this.qa;
-
-    this.matter.world.setGravity(0, this.gravedadBase * (gravedad / 50));
-
-    if (this.velocidadBase !== undefined) {
-        this.personaje.velocidadTierra = this.velocidadBase * (velocidad / 50);
+        this.actualizarModoFantasma(Boolean(fantasma));
     }
 
-    // En modo atravesar el carpincho vuela (si no, se caería por el suelo)
-    if (this.personaje.adaptarSueloCarpincho) {
-        this.personaje.setIgnoreGravity(atravesar);
-    }
-}
+    actualizarModoFantasma(activar) {
+        const p = this.personaje;
+        if (!p?.body) return;
 
-volarQA() {
-    const t = this.teclas, w = this.teclasWASD;
-    const arriba = t.up.isDown || w.W.isDown || w.SPACE.isDown;
-    const abajo = t.down.isDown || w.S.isDown;
-    const v = this.personaje.velocidadTierra * 0.7;
-    this.personaje.setVelocityY(((abajo ? 1 : 0) - (arriba ? 1 : 0)) * v);
-}
-    // ---------- Guardado ----------
+        const activo = this.estadoFantasma !== null;
+        if (activar === activo) return;
+
+        if (activar) {
+            this.estadoFantasma = {
+                mascaras: p.body.parts.map((parte) => parte.collisionFilter.mask),
+                ignoraGravedad: p.body.ignoreGravity,
+                ignoraAgua: p.ignoraAgua,
+            };
+
+            p.body.parts.forEach((parte) => { parte.collisionFilter.mask = 0; });
+            p.setIgnoreGravity(true);
+            p.ignoraAgua = true;
+            p.setAlpha(0.5);
+            this.matter.body.setAngle(p.body, 0);
+            p.setVelocity(0, 0);
+        } else {
+            const previo = this.estadoFantasma;
+
+            p.body.parts.forEach((parte, i) => { parte.collisionFilter.mask = previo.mascaras[i]; });
+            p.setIgnoreGravity(previo.ignoraGravedad);
+            p.ignoraAgua = previo.ignoraAgua;
+            p.setAlpha(1);
+            p.setVelocity(0, 0);
+            this.estadoFantasma = null;
+        }
+    }
+
+    moverFantasma() {
+        const p = this.personaje;
+        const t = this.teclas;
+        const w = this.teclasWASD;
+
+        const dx = ((t.right.isDown || w.D.isDown) ? 1 : 0) - ((t.left.isDown || w.A.isDown) ? 1 : 0);
+        const dy = ((t.down.isDown || w.S.isDown) ? 1 : 0)
+            - ((t.up.isDown || w.W.isDown || w.SPACE.isDown) ? 1 : 0);
+
+        const largo = Math.hypot(dx, dy) || 1;   // para que la diagonal no sea más rápida
+        const v = VELOCIDAD_FANTASMA * Math.max(0.1, this.ajustesQA.velocidad / VALOR_QA_NORMAL);
+
+        p.setVelocity((dx / largo) * v, (dy / largo) * v);
+        if (dx !== 0) p.setFlipX(dx < 0);
+
+        // Sin colisiones tampoco hay bordes del mundo: se lo mantiene adentro a mano
+        const l = this.limitesMundo;
+        if (!l) return;
+
+        const x = Math.min(Math.max(p.x, l.x), l.x + l.ancho);
+        const y = Math.min(Math.max(p.y, l.y), l.y + l.alto);
+        if (x !== p.x || y !== p.y) p.setPosition(x, y);
+    }
+
     capturarEstado() {
         if (!this.personaje) return null;
 
@@ -381,7 +398,6 @@ volarQA() {
         });
     }
 
-    // ---------- Checkpoints y fin de nivel ----------
     activarCheckpoint(sensor) {
         if (sensor.activado) return;
         sensor.activado = true;
@@ -402,7 +418,6 @@ volarQA() {
         this.game.events.emit("nivel-completado");
     }
 
-    // ---------- Contactos (botón → puerta, daño, checkpoint, fin) ----------
     crearDeteccionContactos() {
         this.matter.world.on("collisionstart", (evento) => {
             evento.pairs.forEach(({ bodyA, bodyB }) => {
@@ -415,14 +430,12 @@ volarQA() {
     }
 
     resolverInteraccion(bodyA, bodyB) {
-        // Identificar el cuerpo principal si es compuesto
         const obtenerCuerpoPrincipal = (body) =>
             body.parent && body.parent !== body ? body.parent : body;
 
         const cuerpoA = obtenerCuerpoPrincipal(bodyA);
         const cuerpoB = obtenerCuerpoPrincipal(bodyB);
 
-        // Buscar si alguno de los cuerpos es accionable
         const accionable = [cuerpoA, cuerpoB].find((body) =>
             body.tags?.includes("accionable")
         );
@@ -432,7 +445,6 @@ volarQA() {
 
             if (!otroCuerpo.peso) return;
 
-            // Comportamiento del botón
             if (accionable.label === "Boton_peso") {
                 if (accionable.activado) return;
 
@@ -445,10 +457,8 @@ volarQA() {
                 if (puerta && !puerta.abierta) {
                     puerta.abierta = true;
 
-                    // Quitamos la colisión para permitir el paso
                     this.matter.world.remove(puerta);
 
-                    // Hacemos desaparecer la puerta gradualmente
                     this.tweens.add({
                         targets: puerta.objetoVisual,
                         alpha: 0,
@@ -475,7 +485,6 @@ volarQA() {
             }
         }
 
-        // Identificar al personaje que controla el jugador
         const esPersonaje = (body) =>
             body === this.personaje.body || body.parent === this.personaje.body;
 
@@ -493,19 +502,17 @@ volarQA() {
 
         const tags = objeto.tags || [];
 
-        // Daño
+  
         if (tags.includes("entidad_danio")) {
             this.reaparecerPersonaje();
             return;
         }
 
-        // Checkpoint
         if (tags.includes("guardado")) {
             this.activarCheckpoint(objeto);
             return;
         }
 
-        // Fin del nivel
         if (tags.includes("fin_nivel")) {
             this.finalizarNivel();
             return;

@@ -18,7 +18,7 @@ function esTester() {
 
 export default function MenuPausa({
     idNivel, obtenerEstado, onContinuar, onAjustes, onSalir, onSeleccionar,
-    obtenerAjustesQA, aplicarAjustesQA,
+    obtenerEscena,
 }) {
     const [panelAbierto, setPanelAbierto] = useState(false);
     const [panelQAAbierto, setPanelQAAbierto] = useState(false);
@@ -56,8 +56,7 @@ export default function MenuPausa({
 
             {tester && panelQAAbierto && (
                 <PanelQA
-                    ajustes={obtenerAjustesQA?.()}
-                    onCambiarAjustes={aplicarAjustesQA}
+                    obtenerEscena={obtenerEscena}
                     onCerrar={() => setPanelQAAbierto(false)}
                 />
             )}

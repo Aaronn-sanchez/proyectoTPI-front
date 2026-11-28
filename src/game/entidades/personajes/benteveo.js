@@ -59,9 +59,9 @@ export function prepararFramesBenteveo(scene) {
 // INICIO (se le pasa a wachin como iniciarEntidad)
 // ==========================================================
 export function iniciarBenteveo(personaje) {
+
     const Matter = Phaser.Physics.Matter.Matter;
     const { x, y } = personaje;
-
     // Vuela: el agua no lo flota ni lo frena (ver sistemas/agua.js)
     personaje.ignoraAgua = true;
 
@@ -80,6 +80,19 @@ export function iniciarBenteveo(personaje) {
             frameRate: 8,
             repeat: -1,
         });
+
+        // dentro de iniciarBenteveo:
+personaje.factorVelocidad = 1;
+personaje.factorGravedad = 1;
+
+// dentro de mover():
+const vMax = VELOCIDAD_MAX_X * this.factorVelocidad;
+const acel = ACELERACION_X * this.factorVelocidad;
+// ...
+vx = AVANCE_AUTOMATICO * this.factorVelocidad;                          // en la rama de avance automático
+vx = Phaser.Math.Clamp(vx + dir * acel * paso, -vMax, vMax);            // en la rama normal
+// ...
+let vy = this.body.velocity.y + GRAVEDAD * this.factorGravedad * paso;
     }
 
     personaje.play("vuelo_benteveo");

@@ -46,8 +46,8 @@ export default class ElCamalotal extends EscenaBase {
         this.personaje.on("golpe", () => this.reaparecerPersonaje());
     }
 
-    alActualizar() {
-        if (!MUERE_EN_AGUA) return;
+   alActualizar() {
+    if (!MUERE_EN_AGUA || this.ajustesQA.fantasma) return;
 
         const cuerpo = this.personaje.body;
         if (this.aguas.some((a) => a.medirSumersion(cuerpo) > 0)) {

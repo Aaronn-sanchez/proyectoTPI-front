@@ -47,6 +47,7 @@ export const CAPAS_VISUALES = [
     { capa: CAPAS.POZITO, textura: "pozito_tiles", prefijo: "pozo", profundidad: PROFUNDIDAD.POZITO },
     { capa: CAPAS.HIERBAS, textura: "hierbas", prefijo: "hierba", profundidad: PROFUNDIDAD.HIERBAS },
     { capa: CAPAS.PASTITO3, textura: "suelo_nivel2", prefijo: "suelo2", profundidad: PROFUNDIDAD.PASTITO3 },
+    
 ];
 
 export const SONIDOS_CONTACTO = {
@@ -57,3 +58,4 @@ export const SONIDOS_CONTACTO = {
 };
 export const GRAVEDAD_BASE = 1.2;
 export const VALOR_QA_NORMAL = 50;
+export const VELOCIDAD_FANTASMA = 8;  

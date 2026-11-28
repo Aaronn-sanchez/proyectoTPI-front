@@ -3,33 +3,29 @@ import Caja from '../Caja';
 import { SERVICIO, tieneServicio } from "../../game/utilidades/permisos.js";
 import './PanelQA.css';
 
+const NORMAL = { gravedad: 50, velocidad: 50, fantasma: false };
 
 export default function PanelQA({ onCerrar, obtenerEscena }) {
     const escena = obtenerEscena?.();
-    const inicial = escena?.qa ?? { gravedad: 50, velocidad: 50, atravesar: false };
+    const inicial = escena?.ajustesQA ?? NORMAL;
 
     const [gravedad, setGravedad] = useState(inicial.gravedad);
     const [velocidad, setVelocidad] = useState(inicial.velocidad);
-    const [atravesar, setAtravesar] = useState(inicial.atravesar);
+    const [fantasma, setFantasma] = useState(inicial.fantasma ?? false);
 
     const restablecerAjustes = () => {
-    setGravedad(50);
-    setVelocidad(50);
-    setAtravesar(false);
-
-    escena?.aplicarAjustesQA({
-        gravedad: 50,
-        velocidad: 50,
-        atravesar: false,
-    });
-};
+        setGravedad(NORMAL.gravedad);
+        setVelocidad(NORMAL.velocidad);
+        setFantasma(NORMAL.fantasma);
+        escena?.aplicarAjustesQA({ ...NORMAL });
+    };
 
     const puede = {
-    gravedad: true,
-    velocidad: true,
-    paredes: true,
-    checkpoint: tieneServicio(SERVICIO.CHECKPOINT),
-};
+        gravedad: true,
+        velocidad: true,
+        fantasma: true,
+        checkpoint: tieneServicio(SERVICIO.CHECKPOINT),
+    };
     const aviso = (ok) => (ok ? undefined : 'No tenés permiso para esto');
 
     return (
@@ -68,27 +64,28 @@ export default function PanelQA({ onCerrar, obtenerEscena }) {
                             </label>
                         </div>
 
-                        <label className={`qa-interruptor ${puede.paredes ? '' : 'qa-bloqueado'}`} title={aviso(puede.paredes)}>
-                            Atravesar paredes
-                            <input type="checkbox" role="switch" className="qa-interruptor__input"
-                                checked={atravesar} disabled={!puede.paredes}
+                        <label className="qa-interruptor">
+                            Modo fantasma
+                            <input
+                                type="checkbox"
+                                role="switch"
+                                className="qa-interruptor__input"
+                                checked={fantasma}
+                                disabled={!puede.fantasma}
                                 onChange={(e) => {
-                                    setAtravesar(e.target.checked);
-                                    escena?.aplicarAjustesQA({ atravesar: e.target.checked });
-                                }} />
+                                    setFantasma(e.target.checked);
+                                    escena?.aplicarAjustesQA({ fantasma: e.target.checked });
+                                }}
+                            />
                             <span className="qa-interruptor__pista" aria-hidden="true" />
                         </label>
                     </section>
-                    <button
-    type="button"
-    className="qa-restablecer"
-    onClick={restablecerAjustes}
->
-    Restablecer
-</button>
+
+                    <button type="button" className="qa-restablecer" onClick={restablecerAjustes}>
+                        Restablecer
+                    </button>
 
                     <section className={`qa-checkpoints ${puede.checkpoint ? '' : 'qa-bloqueado'}`} title={aviso(puede.checkpoint)}>
-                        {/* ...igual que antes, pero con disabled={!puede.checkpoint} en cada bandera y en el botón .qa-ir */}
                     </section>
                 </div>
             </Caja>
