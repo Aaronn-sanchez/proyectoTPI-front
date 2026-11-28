@@ -1,13 +1,22 @@
-
 import { obtenerPerfil } from '../../api/auth.js';
 
+const ROL_QA = 2;
 export const SERVICIO = {
-    GRAVEDAD: 'modificar_gravedad',
-    VELOCIDAD: 'modificar_velocidad',
-    PAREDES: 'atravesar_paredes',
-    CHECKPOINT: 'elegir_checkpoint',
+    GRAVEDAD: 'gravedad',
+    VELOCIDAD: 'Modificar_velocidad',               
+    PAREDES: 'Atravesar_paredes',       
 };
 const SERVICIOS_QA = Object.values(SERVICIO);
+
+function leerUsuario() {
+    try {
+        return JSON.parse(localStorage.getItem('usuario') || 'null');
+    } catch {
+        return null;
+    }
+}
+
+export const esQA = () => Boolean(leerUsuario()?.roles?.includes(ROL_QA));
 
 export function obtenerServicios() {
     try {
@@ -19,7 +28,10 @@ export function obtenerServicios() {
 }
 
 export const tieneServicio = (clave) => obtenerServicios().includes(clave);
-export const puedeVerPanelQA = () => SERVICIOS_QA.some(tieneServicio);
+
+// El QA Tester puede todo; el resto, solo los servicios que le asignaron
+export const puedeServicio = (clave) => esQA() || tieneServicio(clave);
+export const puedeVerPanelQA = () => esQA() || SERVICIOS_QA.some(tieneServicio);
 
 export async function refrescarSesion() {
     const datos = await obtenerPerfil();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Caja from '../Caja';
-import { SERVICIO, tieneServicio } from "../../game/utilidades/permisos.js";
+import { SERVICIO, puedeServicio } from "../../game/utilidades/permisos.js";
 import './PanelQA.css';
 
 const NORMAL = { gravedad: 50, velocidad: 50, fantasma: false };
@@ -13,20 +13,24 @@ export default function PanelQA({ onCerrar, obtenerEscena }) {
     const [velocidad, setVelocidad] = useState(inicial.velocidad);
     const [fantasma, setFantasma] = useState(inicial.fantasma ?? false);
 
-    const restablecerAjustes = () => {
-        setGravedad(NORMAL.gravedad);
-        setVelocidad(NORMAL.velocidad);
-        setFantasma(NORMAL.fantasma);
-        escena?.aplicarAjustesQA({ ...NORMAL });
-    };
-
     const puede = {
-        gravedad: true,
-        velocidad: true,
-        fantasma: true,
-        checkpoint: tieneServicio(SERVICIO.CHECKPOINT),
+        gravedad: puedeServicio(SERVICIO.GRAVEDAD),
+        velocidad: puedeServicio(SERVICIO.VELOCIDAD),
+        fantasma: puedeServicio(SERVICIO.PAREDES),
+        checkpoint: puedeServicio(SERVICIO.CHECKPOINT),
     };
     const aviso = (ok) => (ok ? undefined : 'No tenés permiso para esto');
+
+    // Solo restablece lo que este usuario tiene permitido tocar
+    const restablecerAjustes = () => {
+        const cambios = {};
+
+        if (puede.gravedad) { setGravedad(NORMAL.gravedad); cambios.gravedad = NORMAL.gravedad; }
+        if (puede.velocidad) { setVelocidad(NORMAL.velocidad); cambios.velocidad = NORMAL.velocidad; }
+        if (puede.fantasma) { setFantasma(NORMAL.fantasma); cambios.fantasma = NORMAL.fantasma; }
+
+        escena?.aplicarAjustesQA(cambios);
+    };
 
     return (
         <div className="panel-qa-fondo" role="dialog" aria-modal="true" aria-label="Panel de QA Tester">
@@ -64,7 +68,7 @@ export default function PanelQA({ onCerrar, obtenerEscena }) {
                             </label>
                         </div>
 
-                        <label className="qa-interruptor">
+                        <label className={`qa-interruptor ${puede.fantasma ? '' : 'qa-bloqueado'}`} title={aviso(puede.fantasma)}>
                             Modo fantasma
                             <input
                                 type="checkbox"

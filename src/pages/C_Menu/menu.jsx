@@ -3,6 +3,8 @@ import { Link } from 'wouter';
 import CajaMenu from '../../componentes/Caja.jsx';
 import Layout from '../../componentes/Layout.jsx';
 import PerfilMini from '../../componentes/miniperfil/miniP.jsx';
+import { esQA } from '../../game/utilidades/permisos.js';
+
 import './menu.css';
 
 export default function Menu() {
@@ -24,9 +26,11 @@ export default function Menu() {
                         Mis Logros
                     </Link>
 
-                    <Link href="/listaUsuarios" className="btn-menu">
-                        Lista de usuarios
-                    </Link>
+                    {esQA() && (
+    <Link href="/listaUsuarios" className="btn-menu">
+        Lista de usuarios
+    </Link>
+)}
 
                     <Link href="/ajustes" className="btn-menu">
                         Ajustes
@@ -35,7 +39,7 @@ export default function Menu() {
                     <Link href="/niveles" className="btn-menu">
                         Lista de niveles
                     </Link>
-
+                    
                 </div>
             </CajaMenu>
         </Layout>

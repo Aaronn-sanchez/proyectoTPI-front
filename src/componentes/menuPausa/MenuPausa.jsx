@@ -2,19 +2,9 @@ import { useState } from 'react';
 import CajaMenu from '../Caja';
 import PanelGuardados from './PanelGuardados';
 import PanelQA from '../panel-qa/PanelQA';
+import { puedeVerPanelQA } from '../../game/utilidades/permisos.js';
+
 import './MenuPausa.css';
-
-const ROL_QA = 2;
-
-// Lee el usuario de la sesión; si el JSON está roto, se trata como sin sesión
-function esTester() {
-    try {
-        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
-        return Boolean(usuario?.roles?.includes(ROL_QA));
-    } catch {
-        return false;
-    }
-}
 
 export default function MenuPausa({
     idNivel, obtenerEstado, onContinuar, onAjustes, onSalir, onSeleccionar,
@@ -22,7 +12,7 @@ export default function MenuPausa({
 }) {
     const [panelAbierto, setPanelAbierto] = useState(false);
     const [panelQAAbierto, setPanelQAAbierto] = useState(false);
-    const tester = esTester();
+    const verPanelQA = puedeVerPanelQA();
 
     return (
         <div className="pausa-overlay">
@@ -34,8 +24,8 @@ export default function MenuPausa({
                         <button className="pausa-btn" onClick={onSalir}>Salí de la partida</button>
                         <button className="pausa-btn" onClick={onAjustes}>Ajustes</button>
 
-                        {/* Solo para usuarios con el rol QA Tester */}
-                        {tester && (
+                        {/* QA Tester, o cualquiera con al menos un servicio habilitado */}
+                        {verPanelQA && (
                             <button className="pausa-btn" onClick={() => setPanelQAAbierto(true)}>
                                 Ajustes especiales
                             </button>
@@ -54,7 +44,7 @@ export default function MenuPausa({
                 />
             </div>
 
-            {tester && panelQAAbierto && (
+            {verPanelQA && panelQAAbierto && (
                 <PanelQA
                     obtenerEscena={obtenerEscena}
                     onCerrar={() => setPanelQAAbierto(false)}
