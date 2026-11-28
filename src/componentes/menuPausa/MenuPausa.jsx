@@ -6,6 +6,7 @@ import './MenuPausa.css';
 
 const ROL_QA = 2;
 
+// Lee el usuario de la sesión; si el JSON está roto, se trata como sin sesión
 function esTester() {
     try {
         const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
@@ -15,7 +16,10 @@ function esTester() {
     }
 }
 
-export default function MenuPausa({ idNivel, obtenerEstado, onContinuar, onAjustes, onSalir, onSeleccionar }) {
+export default function MenuPausa({
+    idNivel, obtenerEstado, onContinuar, onAjustes, onSalir, onSeleccionar,
+    obtenerAjustesQA, aplicarAjustesQA,
+}) {
     const [panelAbierto, setPanelAbierto] = useState(false);
     const [panelQAAbierto, setPanelQAAbierto] = useState(false);
     const tester = esTester();
@@ -51,7 +55,11 @@ export default function MenuPausa({ idNivel, obtenerEstado, onContinuar, onAjust
             </div>
 
             {tester && panelQAAbierto && (
-                <PanelQA onCerrar={() => setPanelQAAbierto(false)} />
+                <PanelQA
+                    ajustes={obtenerAjustesQA?.()}
+                    onCambiarAjustes={aplicarAjustesQA}
+                    onCerrar={() => setPanelQAAbierto(false)}
+                />
             )}
         </div>
     );

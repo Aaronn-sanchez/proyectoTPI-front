@@ -10,10 +10,7 @@ import Login from './pages/Login/login.jsx';
 import Logros from './pages/Logros/logros.jsx';
 import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
 import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
-import PanelQA from './componentes/panel-qa/PanelQA.jsx'
-
-import { obtenerPerfil } from './api/auth';
-
+import { refrescarSesion } from "./game/utilidades/permisos.js";
 const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
@@ -28,7 +25,7 @@ export default function App() {
   useEffect(() => {
     if (!token) return;
 
-    obtenerPerfil()
+    refrescarSesion()
       .catch(() => {
         // Token vencido o inválido: se borra y se vuelve al login
         localStorage.removeItem('token');
@@ -50,7 +47,9 @@ export default function App() {
 
       <Route path="/menu" component={Menu} />
       <Route path="/niveles" component={Niveles} />
-      <Route path="/jugar/tutorial" component={Juego} />
+      <Route path="/jugar/:id">
+        {(params) => <Juego key={params.id} id={params.id} />}
+      </Route>
       <Route path="/ajustes" component={ConfiguracionesUs} />
       <Route path="/misLogros" component={Logros} />
       <Route path="/listaUsuarios" component={ListaUsers} />

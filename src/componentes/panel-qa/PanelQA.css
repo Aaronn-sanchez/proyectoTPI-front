@@ -276,3 +276,34 @@
     font-weight: 700;
     cursor: pointer;
 }
+.qa-bloqueado {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.qa-bloqueado * {
+    cursor: not-allowed;
+}
+.qa-bloqueado .slider-qa,
+.qa-bloqueado .qa-bandera,
+.qa-bloqueado .qa-ir {
+    pointer-events: none;
+}
+
+.qa-restablecer {
+    display: block;
+    margin: 16px auto 0;
+    padding: 7px 24px;
+    border: 0;
+    border-radius: 5px;
+    background-color: #85529f;
+    color: white;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.qa-restablecer:hover {
+    background-color: #6d4085;
+}

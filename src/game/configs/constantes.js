@@ -14,6 +14,7 @@ export const CAPAS = {
 // Valores de la capa IntGrid "Colisiones"
 export const INTGRID = {
     PISO: 1,
+    AGUA: 2,      // sin entrada en CUERPOS_INTGRID: colisiones.js la ignora
     ROCA: 3,
     TRONCO: 4,
 };
@@ -34,13 +35,25 @@ export const PROFUNDIDAD = {
     CARPINCHO: 0,
     PIEDRA: 1,
     PASTITO3: 3,
+    AGUA: 4,      // delante del carpincho; ajustalo según cómo se vea con tus capas
     HIERBAS: 5,
     POZITO: 7,
 };
 
+// Capas de tiles de LDtk → textura que las dibuja. Cada nivel puede definir las suyas.
+// IMPORTANTE: va DESPUÉS de CAPAS y PROFUNDIDAD, porque los usa al definirse.
+export const CAPAS_VISUALES = [
+    { capa: CAPAS.PASTITO, textura: "pastito_tiles", prefijo: "pasto", profundidad: PROFUNDIDAD.PASTO },
+    { capa: CAPAS.POZITO, textura: "pozito_tiles", prefijo: "pozo", profundidad: PROFUNDIDAD.POZITO },
+    { capa: CAPAS.HIERBAS, textura: "hierbas", prefijo: "hierba", profundidad: PROFUNDIDAD.HIERBAS },
+    { capa: CAPAS.PASTITO3, textura: "suelo_nivel2", prefijo: "suelo2", profundidad: PROFUNDIDAD.PASTITO3 },
+];
+
 export const SONIDOS_CONTACTO = {
     pop: {
         clave: "contacto_check",
-        archivo: "../../../public/assets/audio/pop_up.mp3"
+        archivo: "/assets/audio/pop_up.mp3"
     }
 };
+export const GRAVEDAD_BASE = 1.2;
+export const VALOR_QA_NORMAL = 50;

@@ -60,6 +60,7 @@ export function iniciarCarpincho(personaje) {
 
     personaje.peso = true;
     personaje.velocidadTierra = 7.5;
+    personaje.factorVelocidad = 1; // lo mueve el panel QA
     personaje.fuerzaSalto = -8.5 * Math.sqrt(ESCALA); // más grande = salto más fuerte
 
     // Frenado gradual al soltar las teclas (más cerca de 1 = frena más lento)
@@ -367,7 +368,7 @@ export function iniciarCarpincho(personaje) {
             // ---- Movimiento horizontal ----
             let nuevaVx;
             if (moviendo) {
-                nuevaVx = (izq ? -1 : 1) * this.velocidadTierra * factor;
+                nuevaVx = (izq ? -1 : 1) * this.velocidadTierra * this.factorVelocidad * factor;
                 this.setFlipX(izq);
             } else {
                 const f = enAire ? this.frenadoAire : this.frenado;
@@ -397,12 +398,14 @@ export function iniciarCarpincho(personaje) {
             } else {
                 // Frenando sobre el suelo: patas más lentas
                 if (!this.anims.isPlaying) this.play('carpincho_caminando', true);
-                this.anims.timeScale = Math.max(0.3, Math.abs(nuevaVx) / this.velocidadTierra);
+                this.anims.timeScale = Math.max(0.3, Math.abs(nuevaVx) / (this.velocidadTierra * this.factorVelocidad));
             }
 
             if (arriba && puedeSaltar) {
                 this.setVelocityY(this.fuerzaSalto);
                 this.ultimoSuelo = -1000;   // consumir el margen: evita un doble salto
+
+                this.emit('saltar');
             }
         }
     };

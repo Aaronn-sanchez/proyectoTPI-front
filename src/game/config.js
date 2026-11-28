@@ -1,9 +1,6 @@
-
 import Phaser from 'phaser';
-import TutorialBasico from './escenas/TutorialBasico.js';
-
-export function crearConfig(contenedor, guardadoInicial = null) {
-    // El juego siempre se crea en formato horizontal.
+import { GRAVEDAD_BASE } from './configs/constantes';
+export function crearConfig(contenedor, nivel, guardadoInicial = null) {
     const width = Math.max(window.innerWidth, window.innerHeight);
     const height = Math.min(window.innerWidth, window.innerHeight);
 
@@ -17,7 +14,7 @@ export function crearConfig(contenedor, guardadoInicial = null) {
         physics: {
             default: 'matter',
             matter: {
-                gravity: { y: 1.2 },
+                gravity: { y: GRAVEDAD_BASE },
                 debug: true
             }
         },
@@ -30,9 +27,12 @@ export function crearConfig(contenedor, guardadoInicial = null) {
         },
 
         scene: [
-            class extends TutorialBasico {
-                constructor() {
-                    super(guardadoInicial);
+            class extends nivel.escena {
+                init(data) {
+                    super.init({
+                        ...data,
+                        guardado: guardadoInicial
+                    });
                 }
             }
         ]

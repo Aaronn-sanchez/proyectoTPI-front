@@ -1,9 +1,8 @@
-
 import './niveles-select.css';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { obtenerProgreso } from '../../api/niveles';
-
+import { obtenerNivel } from '../../game/niveles';
 import candado from '../../imagenes-react/Candadito.svg';
 import basic from '../../imagenes-react/tutorial-img.svg';
 import nivel2 from '../../imagenes-react/nivel2-img.svg';
@@ -11,14 +10,16 @@ import nivel3 from '../../imagenes-react/nivel3-img.svg';
 import nivel4 from '../../imagenes-react/nivel4-img.svg';
 import nivel5 from '../../imagenes-react/nivel5-img.svg';
 
-// ruta: null = el nivel todavía no tiene escena jugable
 const NIVELES = [
-    { id: 0, img: basic, clase: 'nivel-basico', alt: 'Nivel básico', ruta: '/jugar/tutorial' },
-    { id: 1, img: nivel2, clase: 'nivel-2', alt: 'Nivel 2', ruta: null },
-    { id: 2, img: nivel3, clase: 'nivel-3', alt: 'Nivel 3', ruta: null },
-    { id: 3, img: nivel4, clase: 'nivel-4', alt: 'Nivel 4', ruta: null },
-    { id: 4, img: nivel5, clase: 'nivel-5', alt: 'Nivel 5', ruta: null },
+    { id: 0, img: basic, clase: 'nivel-basico', alt: 'Nivel básico' },
+    { id: 1, img: nivel2, clase: 'nivel-2', alt: 'Nivel 2' },
+    { id: 2, img: nivel3, clase: 'nivel-3', alt: 'Nivel 3' },
+    { id: 3, img: nivel4, clase: 'nivel-4', alt: 'Nivel 4' },
+    { id: 4, img: nivel5, clase: 'nivel-5', alt: 'Nivel 5' },
 ];
+
+const esJugable = (id) => Boolean(obtenerNivel(id));
+const rutaDe = (id) => `/jugar/${id}`;
 
 export default function Niveles() {
     const [, navigate] = useLocation();
@@ -36,8 +37,9 @@ export default function Niveles() {
     const estaBloqueado = (id) =>
         !progreso?.niveles.find((n) => n.id_nivel === id)?.desbloqueado;
 
-    const rutaJugar =
-        NIVELES.find((n) => n.id === progreso?.nivelActual)?.ruta ?? null;
+    const rutaJugar = esJugable(progreso?.nivelActual)
+        ? rutaDe(progreso.nivelActual)
+        : null;
 
     return (
         <main className="niveles-container">
@@ -105,7 +107,7 @@ export default function Niveles() {
                     </g>
                 </svg>
 
-                {NIVELES.map(({ id, img, clase, alt, ruta }) => {
+                {NIVELES.map(({ id, img, clase, alt }) => {
                     const bloqueado = estaBloqueado(id);
 
                     const icono = (
@@ -128,15 +130,9 @@ export default function Niveles() {
                         </div>
                     );
 
-                    return !bloqueado && ruta ? (
-                        <Link key={id} href={ruta}>
-                            {icono}
-                        </Link>
-                    ) : (
-                        <div key={id}>
-                            {icono}
-                        </div>
-                    );
+                    return !bloqueado && esJugable(id)
+                        ? <Link key={id} href={rutaDe(id)}>{icono}</Link>
+                        : <div key={id}>{icono}</div>;
                 })}
             </div>
 
