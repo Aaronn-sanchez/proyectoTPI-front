@@ -158,3 +158,18 @@
     outline: 3px solid rgba(255, 255, 255, 0.8);
     outline-offset: 2px;
 }
+
+.logros__acciones {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-resetear-logros {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}

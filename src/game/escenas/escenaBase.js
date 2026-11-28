@@ -143,7 +143,8 @@ export default class EscenaBase extends Scene {
                 const resultado = await registrarProgreso("SALTAMONTES", 1);
 
                 if (resultado.nuevo) {
-                    console.log("¡Logro desbloqueado!", resultado.logro);
+                    this.game.events.emit('logro-desbloqueado', resultado);
+
                 } else {
                     console.log("Progreso Saltamontes:", resultado.progreso);
                 }

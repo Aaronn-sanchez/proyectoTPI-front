@@ -46,7 +46,6 @@ export default function App() {
       <Route path="/" component={Login} />
       <Route path="/login" component={Login} />
       <Route path="/registro" component={Registro} />
-
       <Route path="/menu" component={Menu} />
       <Route path="/niveles" component={Niveles} />
       <Route path="/jugar/:id">
@@ -56,6 +55,7 @@ export default function App() {
       <Route path="/misLogros" component={Logros} />
       <Route path="/listaUsuarios" component={ListaUsers} />
       <Route path="/cargando" component={PantallaCarga} />
+
 
       <Route>Página no encontrada</Route>
     </Switch>

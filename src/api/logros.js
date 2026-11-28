@@ -11,3 +11,8 @@ export async function registrarProgreso(codigo, incremento = 1) {
     const respuesta = await api.post('/api/logros/progreso', { codigo, incremento });
     return respuesta.data;
 }
+
+export async function resetearLogros() {
+    const respuesta = await api.delete('/api/logros/reset');
+    return respuesta.data;
+}

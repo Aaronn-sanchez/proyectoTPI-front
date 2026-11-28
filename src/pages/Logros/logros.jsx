@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '../../componentes/Layout';
 import CajaMenu from '../../componentes/Caja';
-import { obtenerLogros } from '../../api/logros';
+import { obtenerLogros, resetearLogros } from '../../api/logros';
 import './logros.css';
 
 // Porcentaje de 0 a 100; si la meta fuera 0 no se divide
@@ -14,6 +14,9 @@ export default function Logros() {
     const [logros, setLogros] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
+
+    const servicios = JSON.parse(localStorage.getItem('servicios') || '[]');
+    const puedeResetear = servicios.includes('resetear_logros');
 
     useEffect(() => {
         let cancelado = false;
@@ -29,6 +32,24 @@ export default function Logros() {
 
         return () => { cancelado = true; };
     }, []);
+
+    async function handleResetear() {
+        const confirmar = window.confirm(
+            '¿Estás seguro de que querés reiniciar todos tus logros? Esta acción no se puede deshacer.'
+        );
+
+        if (!confirmar) return;
+
+        try {
+            await resetearLogros();
+
+            const datos = await obtenerLogros();
+            setLogros(datos.logros);
+
+        } catch (error) {
+            setError(error.response?.data?.error || 'No se pudieron reiniciar los logros');
+        }
+    }
 
     return (
         <Layout>
@@ -84,6 +105,15 @@ export default function Logros() {
                 <button className="btn-volver" onClick={() => window.history.back()}>
                     ← Volver
                 </button>
+
+                {puedeResetear && (
+                    <button
+                        className="btn-resetear-logros"
+                        onClick={handleResetear}
+                    >
+                        Reiniciar logros
+                    </button>
+                )}
             </CajaMenu>
         </Layout>
     );

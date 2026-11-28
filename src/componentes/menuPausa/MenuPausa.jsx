@@ -13,7 +13,7 @@ export default function MenuPausa({ idNivel, obtenerEstado, onContinuar, onAjust
                     <div className="pausa-contenido">
                         <h2>Pausa</h2>
                         <button className="pausa-btn" onClick={onContinuar}>Seguir jugando</button>
-                        <button className="pausa-btn" onClick={onSalir}>Salí de la partida</button>
+                        <button className="pausa-btn" onClick={onSalir}>Salir de la partida</button>
                         <button className="pausa-btn" onClick={onAjustes}>Ajustes</button>
                         <button className="pausa-btn" onClick={() => setPanelAbierto((a) => !a)}>
                             Guardar Partida

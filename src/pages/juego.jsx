@@ -8,6 +8,7 @@ import NivelCompletado from '../componentes/Nivel_Completado/NivelCompletado';
 import PantallaCarga from './pantallaCarga/pantallaCarga';
 import { iniciarNivel, completarNivel } from '../api/niveles';
 import { obtenerUltimoGuardado } from '../api/checkpoint';
+import NotificacionLogro from '../componentes/notificar/notificarLogro';
 
 // La pantalla de carga se queda al menos este tiempo (para poder leer el dato curioso)
 const MIN_CARGA_MS = 1500;
@@ -29,6 +30,11 @@ export default function Juego({ id }) {
     const [listo, setListo] = useState(false);        // el nivel terminó de cargar
     const [errorCarga, setErrorCarga] = useState(false);
     const [, setLocation] = useLocation();
+    const [notificacionLogro, setNotificacionLogro] = useState(null);
+
+    function finalizarNotificacion() {
+        setNotificacionLogro(null);
+    }
 
     const [guardadoSeleccionado, setGuardadoSeleccionado] = useState(null);
     const [reinicio, setReinicio] = useState(0);
@@ -65,6 +71,7 @@ export default function Juego({ id }) {
         let temporizadorListo;
         let limite;
         let terminado = false;
+        let alDesbloquearLogro = null;
 
         async function prepararJuego() {
             let guardado = guardadoSeleccionado;
@@ -85,6 +92,19 @@ export default function Juego({ id }) {
             );
 
             const game = juego.current;
+
+            const sonidoTrofeo = new Audio('/assets/audio/ps4-trophy.mp3');
+
+            alDesbloquearLogro = (logro) => {
+                setNotificacionLogro(logro);
+
+                sonidoTrofeo.currentTime = 0;
+                sonidoTrofeo.play().catch((error) => {
+                    console.error('No se pudo reproducir el sonido del trofeo:', error);
+                });
+            };
+
+            game.events.on('logro-desbloqueado', alDesbloquearLogro);
 
             // La escena avisa cuando terminó de cargar (o si algo falló)
             const alTerminar = () => {
@@ -122,6 +142,9 @@ export default function Juego({ id }) {
             clearTimeout(limite);
             clearTimeout(temporizadorListo);
 
+            if (alDesbloquearLogro) {
+                juego.current?.events.off('logro-desbloqueado', alDesbloquearLogro);
+            }
             juego.current?.destroy(true);
             juego.current = null;
         };
@@ -197,6 +220,13 @@ export default function Juego({ id }) {
             overflow: 'hidden'
         }}>
             <div ref={contenedor} />
+
+            {notificacionLogro && (
+                <NotificacionLogro
+                    logro={notificacionLogro}
+                    onFinalizar={finalizarNotificacion}
+                />
+            )}
 
             <button id="menu-link" onClick={() => setPausado(true)}>
                 Menú
