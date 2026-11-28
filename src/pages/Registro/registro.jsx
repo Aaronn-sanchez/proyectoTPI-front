@@ -24,6 +24,7 @@ export default function Registro() {
 
             localStorage.setItem('token', datos.token);
             localStorage.setItem('usuario', JSON.stringify(datos.usuario));
+            localStorage.setItem('servicios', JSON.stringify(datos.servicios ?? []));
 
             navigate('/menu');
         } catch (error) {

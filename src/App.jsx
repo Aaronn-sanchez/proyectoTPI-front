@@ -10,9 +10,7 @@ import Login from './pages/Login/login.jsx';
 import Logros from './pages/Logros/logros.jsx';
 import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
 import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
-
-import { obtenerPerfil } from './api/auth';
-
+import { refrescarSesion } from "./game/utilidades/permisos.js";
 const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
@@ -27,7 +25,7 @@ export default function App() {
   useEffect(() => {
     if (!token) return;
 
-    obtenerPerfil()
+    refrescarSesion()
       .catch(() => {
         // Token vencido o inválido: se borra y se vuelve al login
         localStorage.removeItem('token');

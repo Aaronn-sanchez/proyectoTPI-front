@@ -21,6 +21,7 @@ export default function Perfil() {
 
             localStorage.setItem('usuario', JSON.stringify(datosFrescos.usuario));
             localStorage.setItem('token', datosFrescos.token);
+            localStorage.setItem('servicios', JSON.stringify(datosFrescos.servicios ?? []));
 
             alert("¡Nombre actualizado con éxito!");
             window.location.reload();
@@ -42,6 +43,7 @@ export default function Perfil() {
 
                 localStorage.removeItem('token');
                 localStorage.removeItem('usuario');
+                localStorage.removeItem('servicios')
 
                 window.location.href = '/login';
 

@@ -21,6 +21,7 @@ export default function Login() {
 
             localStorage.setItem('token', datos.token);
             localStorage.setItem('usuario', JSON.stringify(datos.usuario));
+            localStorage.setItem('servicios', JSON.stringify(datos.servicios ?? []));
 
             navigate('/menu');
 

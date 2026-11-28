@@ -46,6 +46,7 @@ export default class EscenaBase extends Scene {
         this.aguaPrevia = null;
         this.personaje = null;      // el personaje que controla el jugador en este nivel
         this.puntoRespawn = null;
+        this.qa = { gravedad: 50, velocidad: 50, atravesar: false }; // 50 = valor normal
     }
 
     // ---------- Carga de assets: lo común vive acá ----------
@@ -109,7 +110,6 @@ export default class EscenaBase extends Scene {
         this.aplicarEstadoObjetos();
         this.crearFondo();
         this.crearPersonaje(this.nivel);   // gancho: cada nivel elige personaje
-        this.iniciarAjustesQA();           // gravedad y velocidad del panel QA
 
         this.crearDeteccionContactos();
         this.crearCamaraYControles(limites);
@@ -120,7 +120,8 @@ export default class EscenaBase extends Scene {
             this.input.keyboard.enableGlobalCapture();
         });
 
-        this.alCrear();                    // gancho: extras del nivel
+        this.alCrear();
+        this.configurarQA();                    
         this.game.events.emit("nivel-listo");
     }
 
@@ -154,10 +155,12 @@ export default class EscenaBase extends Scene {
 
     // Por defecto: mover + adaptación a pendientes del carpincho.
     // Un personaje distinto (benteveo) sobreescribe este método.
-    moverPersonaje(delta) {
-        this.personaje.mover(this.teclas, this.teclasWASD, delta);
-        this.personaje.adaptarSueloCarpincho?.(delta);
-    }
+  moverPersonaje(delta) {
+    this.personaje.mover(this.teclas, this.teclasWASD, delta);
+    this.personaje.adaptarSueloCarpincho?.(delta);
+
+    if (this.qa.atravesar && this.personaje.adaptarSueloCarpincho) this.volarQA();
+}
 
     // Posición inicial: la del guardado si existe; si no, la entidad de spawn
     // de LDtk (por su identificador); si tampoco hay, un valor por defecto.
@@ -259,6 +262,7 @@ export default class EscenaBase extends Scene {
         }
     }
 
+    
     // ---------- Cámara y controles ----------
     crearCamaraYControles(limites) {
         const cam = this.cameras.main;
@@ -272,22 +276,61 @@ export default class EscenaBase extends Scene {
         this.teclasWASD = this.input.keyboard.addKeys("W,A,S,D,SPACE");
     }
 
-    // ---------- Ajustes del panel QA ----------
-    iniciarAjustesQA() {
-        this.ajustesQA = { gravedad: VALOR_QA_NORMAL, velocidad: VALOR_QA_NORMAL };
-        this.aplicarAjustesQA();
-    }
-    aplicarAjustesQA(cambios = {}) {
-        console.log('escena recibió:', cambios, 'personaje:', Boolean(this.personaje));
-        this.ajustesQA = { ...this.ajustesQA, ...cambios };
-        const { gravedad, velocidad } = this.ajustesQA;
+  // ---------- Panel QA ----------
+configurarQA() {
+    const mundo = this.matter.world;
+    this.gravedadBase = mundo.engine.gravity.y;
+    this.velocidadBase = this.personaje.velocidadTierra; // el benteveo no tiene
 
-        this.matter.world.setGravity(0, GRAVEDAD_BASE * (gravedad / VALOR_QA_NORMAL));
+    // Con "atravesar" activo, se desactivan las colisiones con sólidos estáticos
+    // (suelo, rocas, troncos, puertas). Los sensores y los bordes del mundo siguen igual.
+    const ignorarSolidos = (evento) => {
+        if (!this.qa.atravesar) return;
 
-        if (this.personaje) {
-            this.personaje.factorVelocidad = Math.max(0.1, velocidad / VALOR_QA_NORMAL);
+        const cuerpo = this.personaje.body;
+        const esPropio = (b) => b === cuerpo || b.parent === cuerpo;
+        const bordes = Object.values(mundo.walls ?? {});
+
+        for (const par of evento.pairs) {
+            let otro;
+            if (esPropio(par.bodyA)) otro = par.bodyB;
+            else if (esPropio(par.bodyB)) otro = par.bodyA;
+            else continue;
+
+            const raiz = otro.parent ?? otro;
+            if (raiz.isStatic && !raiz.isSensor && !otro.isSensor && !bordes.includes(otro)) {
+                par.isActive = false;   // Matter no resuelve este choque
+            }
         }
+    };
+
+    mundo.on("collisionstart", ignorarSolidos);
+    mundo.on("collisionactive", ignorarSolidos);
+}
+
+aplicarAjustesQA(cambios) {
+    Object.assign(this.qa, cambios);
+    const { gravedad, velocidad, atravesar } = this.qa;
+
+    this.matter.world.setGravity(0, this.gravedadBase * (gravedad / 50));
+
+    if (this.velocidadBase !== undefined) {
+        this.personaje.velocidadTierra = this.velocidadBase * (velocidad / 50);
     }
+
+    // En modo atravesar el carpincho vuela (si no, se caería por el suelo)
+    if (this.personaje.adaptarSueloCarpincho) {
+        this.personaje.setIgnoreGravity(atravesar);
+    }
+}
+
+volarQA() {
+    const t = this.teclas, w = this.teclasWASD;
+    const arriba = t.up.isDown || w.W.isDown || w.SPACE.isDown;
+    const abajo = t.down.isDown || w.S.isDown;
+    const v = this.personaje.velocidadTierra * 0.7;
+    this.personaje.setVelocityY(((abajo ? 1 : 0) - (arriba ? 1 : 0)) * v);
+}
     // ---------- Guardado ----------
     capturarEstado() {
         if (!this.personaje) return null;
