@@ -11,6 +11,7 @@ import Logros from './pages/Logros/logros.jsx';
 import ListaUsers from './pages/Lista-de-usuarios/list_users.jsx';
 import PantallaCarga from './pages/pantallaCarga/pantallaCarga.jsx';
 import { refrescarSesion } from "./game/utilidades/permisos.js";
+import PanelQA from './componentes/panel-qa/PanelQA.jsx';
 const RUTAS_PUBLICAS = ['/', '/registro'];
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
       <Route path="/misLogros" component={Logros} />
       <Route path="/listaUsuarios" component={ListaUsers} />
       <Route path="/cargando" component={PantallaCarga} />
+      <Route path="/panel" component={PanelQA} />
 
       <Route>Página no encontrada</Route>
     </Switch>
