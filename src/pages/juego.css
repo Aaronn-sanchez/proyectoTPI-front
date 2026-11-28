@@ -1,0 +1,17 @@
+.contador-muertes {
+    position: absolute;
+    top: 20px;
+    align-items: center;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 16px;
+    border-radius: 10px;
+
+    background: rgba(30, 40, 49, 0.411);
+    color: white;
+    font-family: 'Radio Canada', sans-serif;
+}

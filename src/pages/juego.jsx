@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { useLocation } from 'wouter';
@@ -9,13 +10,14 @@ import PantallaCarga from './pantallaCarga/pantallaCarga';
 import { iniciarNivel, completarNivel } from '../api/niveles';
 import { obtenerUltimoGuardado } from '../api/checkpoint';
 import NotificacionLogro from '../componentes/notificar/notificarLogro';
+import './juego.css';
 
-// La pantalla de carga se queda al menos este tiempo (para poder leer el dato curioso)
+// La pantalla de carga se queda al menos este tiempo
 const MIN_CARGA_MS = 1500;
-// Si el nivel no termina de cargar en este tiempo, se muestra el error
+
+// Tiempo máximo de espera para cargar el nivel
 const TIMEOUT_CARGA_MS = 30000;
 
-// "id" llega desde la ruta /jugar/:id (ver App.jsx)
 export default function Juego({ id }) {
     const idNivel = Number(id);
     const nivel = obtenerNivel(idNivel);
@@ -27,24 +29,25 @@ export default function Juego({ id }) {
     const [pausado, setPausado] = useState(false);
     const [autorizado, setAutorizado] = useState(false);
     const [fin, setFin] = useState(null);
-    const [listo, setListo] = useState(false);        // el nivel terminó de cargar
+    const [listo, setListo] = useState(false);
     const [errorCarga, setErrorCarga] = useState(false);
     const [, setLocation] = useLocation();
     const [notificacionLogro, setNotificacionLogro] = useState(null);
 
+    const [guardadoSeleccionado, setGuardadoSeleccionado] = useState(null);
+    const [reinicio, setReinicio] = useState(0);
+    const [muertes, setMuertes] = useState(0);
+
     function finalizarNotificacion() {
         setNotificacionLogro(null);
     }
-
-    const [guardadoSeleccionado, setGuardadoSeleccionado] = useState(null);
-    const [reinicio, setReinicio] = useState(0);
 
     // Si el id no corresponde a un nivel jugable, vuelve al mapa
     useEffect(() => {
         if (!nivel) setLocation('/niveles');
     }, [nivel, setLocation]);
 
-    // La API valida que el nivel esté desbloqueado para este usuario
+    // La API valida que el nivel esté desbloqueado
     useEffect(() => {
         if (!nivel) return;
 
@@ -63,7 +66,7 @@ export default function Juego({ id }) {
         };
     }, [nivel, idNivel, setLocation]);
 
-    // El juego se crea recién cuando la API da el OK
+    // Crear el juego de Phaser cuando la API da autorización
     useEffect(() => {
         if (!nivel || !autorizado || juego.current) return;
 
@@ -71,7 +74,11 @@ export default function Juego({ id }) {
         let temporizadorListo;
         let limite;
         let terminado = false;
+
         let alDesbloquearLogro = null;
+        let alActualizarMuertes = null;
+        let alTerminar = null;
+        let alFallar = null;
 
         async function prepararJuego() {
             let guardado = guardadoSeleccionado;
@@ -81,18 +88,36 @@ export default function Juego({ id }) {
                     const respuesta = await obtenerUltimoGuardado(idNivel);
                     guardado = respuesta.guardado;
                 } catch (error) {
-                    console.error('No se pudo consultar el último guardado:', error);
+                    console.error(
+                        'No se pudo consultar el último guardado:',
+                        error
+                    );
                 }
             }
 
             if (cancelado) return;
 
+            // Crear Phaser
             juego.current = new Phaser.Game(
                 crearConfig(contenedor.current, nivel, guardado)
             );
 
             const game = juego.current;
 
+            // Reiniciar el contador al iniciar o cargar una partida
+            setMuertes(0);
+
+            // Escuchar actualizaciones de muertes
+            alActualizarMuertes = (cantidad) => {
+                setMuertes(cantidad);
+            };
+
+            game.events.on(
+                'muertes-actualizadas',
+                alActualizarMuertes
+            );
+
+            // Sonido y notificación de logros
             const sonidoTrofeo = new Audio('/assets/audio/ps4-trophy.mp3');
 
             alDesbloquearLogro = (logro) => {
@@ -100,14 +125,20 @@ export default function Juego({ id }) {
 
                 sonidoTrofeo.currentTime = 0;
                 sonidoTrofeo.play().catch((error) => {
-                    console.error('No se pudo reproducir el sonido del trofeo:', error);
+                    console.error(
+                        'No se pudo reproducir el sonido del trofeo:',
+                        error
+                    );
                 });
             };
 
-            game.events.on('logro-desbloqueado', alDesbloquearLogro);
+            game.events.on(
+                'logro-desbloqueado',
+                alDesbloquearLogro
+            );
 
-            // La escena avisa cuando terminó de cargar (o si algo falló)
-            const alTerminar = () => {
+            // La escena avisa cuando terminó de cargar
+            alTerminar = () => {
                 terminado = true;
 
                 const falta = Math.max(
@@ -120,7 +151,8 @@ export default function Juego({ id }) {
                 }, falta);
             };
 
-            const alFallar = () => {
+            // La escena avisa si hubo un error
+            alFallar = () => {
                 terminado = true;
                 setErrorCarga(true);
             };
@@ -136,21 +168,47 @@ export default function Juego({ id }) {
 
         prepararJuego();
 
+        // Limpiar eventos y destruir Phaser
         return () => {
             cancelado = true;
 
             clearTimeout(limite);
             clearTimeout(temporizadorListo);
 
-            if (alDesbloquearLogro) {
-                juego.current?.events.off('logro-desbloqueado', alDesbloquearLogro);
+            const game = juego.current;
+
+            if (game) {
+                if (alActualizarMuertes) {
+                    game.events.off(
+                        'muertes-actualizadas',
+                        alActualizarMuertes
+                    );
+                }
+
+                if (alDesbloquearLogro) {
+                    game.events.off(
+                        'logro-desbloqueado',
+                        alDesbloquearLogro
+                    );
+                }
+
+                if (alTerminar) {
+                    game.events.off('nivel-listo', alTerminar);
+                }
+
+                if (alFallar) {
+                    game.events.off('nivel-error-carga', alFallar);
+                }
+
+                game.events.off('nivel-completado', guardarFin);
+
+                game.destroy(true);
+                juego.current = null;
             }
-            juego.current?.destroy(true);
-            juego.current = null;
         };
     }, [nivel, autorizado, reinicio, guardadoSeleccionado]);
 
-    // Guarda el nivel como completado en la API
+    // Guardar el nivel como completado en la API
     async function guardarFin() {
         setFin('guardando');
 
@@ -162,20 +220,24 @@ export default function Juego({ id }) {
         }
     }
 
-    // Pausa o reanuda la escena de Phaser
+    // Pausar o reanudar la escena de Phaser
     useEffect(() => {
         if (!nivel || !juego.current) return;
 
         const manager = juego.current.scene;
 
         if (pausado || fin) {
-            if (manager.isActive(nivel.clave)) manager.pause(nivel.clave);
+            if (manager.isActive(nivel.clave)) {
+                manager.pause(nivel.clave);
+            }
         } else {
-            if (manager.isPaused(nivel.clave)) manager.resume(nivel.clave);
+            if (manager.isPaused(nivel.clave)) {
+                manager.resume(nivel.clave);
+            }
         }
     }, [nivel, pausado, fin, autorizado]);
 
-    // Escape abre y cierra el menú de pausa (no mientras está cargando)
+    // Escape abre y cierra el menú de pausa
     useEffect(() => {
         const alApretar = (e) => {
             if (e.key === 'Escape' && !fin && listo) {
@@ -190,6 +252,7 @@ export default function Juego({ id }) {
         };
     }, [fin, listo]);
 
+    // Cargar una partida guardada
     function cargarGuardado(guardado) {
         const confirmar = window.confirm(
             '¿Estás seguro de que quieres cargar esta partida?\n\nSe perderá el progreso que no hayas guardado.'
@@ -206,19 +269,21 @@ export default function Juego({ id }) {
         setReinicio((actual) => actual + 1);
     }
 
-    // Todos los hooks ya se ejecutaron: recién acá se puede cortar el render
     if (!nivel) return null;
 
     return (
-        <div style={{
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: '#1a1a1a',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden'
-        }}>
+        <div
+            style={{
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: '#1a1a1a',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                overflow: 'hidden',
+                position: 'relative'
+            }}
+        >
             <div ref={contenedor} />
 
             {notificacionLogro && (
@@ -228,20 +293,32 @@ export default function Juego({ id }) {
                 />
             )}
 
-            <button id="menu-link" onClick={() => setPausado(true)}>
+            <button
+                id="menu-link"
+                onClick={() => setPausado(true)}
+            >
                 Menú
             </button>
 
             {pausado && !fin && (
                 <MenuPausa
                     idNivel={idNivel}
-                    obtenerEstado={() => juego.current?.scene.getScene(nivel.clave)?.capturarEstado()}
+                    obtenerEstado={() =>
+                        juego.current
+                            ?.scene.getScene(nivel.clave)
+                            ?.capturarEstado()
+                    }
                     onSeleccionar={cargarGuardado}
                     onContinuar={() => setPausado(false)}
                     onAjustes={() => setLocation('/ajustes')}
                     onSalir={() => setLocation('/niveles')}
                 />
             )}
+
+            <div className="contador-muertes">
+                <span>💀:</span>
+                <strong>{muertes}</strong>
+            </div>
 
             {fin && (
                 <NivelCompletado

@@ -44,6 +44,7 @@ export default class EscenaBase extends Scene {
         this.aguaPrevia = null;
         this.personaje = null;      // el personaje que controla el jugador en este nivel
         this.puntoRespawn = null;
+        this.muertes = 0;
     }
 
     // ---------- Carga de assets: lo común vive acá ----------
@@ -119,6 +120,7 @@ export default class EscenaBase extends Scene {
         });
 
         this.alCrear();                    // gancho: extras del nivel
+        this.game.events.emit("muertes-actualizadas", this.muertes);
         this.game.events.emit("nivel-listo");
     }
 
@@ -347,6 +349,10 @@ export default class EscenaBase extends Scene {
     }
 
     reaparecerPersonaje() {
+        this.muertes++;
+
+        this.game.events.emit("muertes-actualizadas", this.muertes);
+
         const { x, y } = this.puntoRespawn;
         this.personaje.setPosition(x, y);
         this.personaje.setVelocity(0, 0);
